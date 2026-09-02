@@ -1,0 +1,104 @@
+# =============================================================================
+# DiffRwkv Offline Staging Manifest
+# Target: 2xH200 offline machine (NO network access)
+# Generated: 2026-05-29
+# Expected total transfer size: ~1.1 GB (+ model weights ~864 MB)
+# =============================================================================
+
+# === Code ===
+# Entire DiffRwkv repo, excluding large non-essential directories.
+# Transfer via: rsync -av --exclude='.venv' --exclude='__pycache__' \
+#   --exclude='.git' --exclude='outputs_relay' --exclude='outputs' \
+#   --exclude='outputs_star_ldm' --exclude='data' \
+#   --exclude='preprocessed_data' --exclude='checkpoints' \
+#   ./ offline_machine:/path/to/DiffRwkv/
+#
+# Path: ./
+# Expected file count: ~356 files (source code only)
+# Expected size: ~16 MB
+# Excludes: .venv, __pycache__, .git, outputs_relay, outputs,
+#           outputs_star_ldm, data, preprocessed_data, checkpoints
+
+# === Model Weights ===
+# RWKV-7 0.4B World frozen backbone (HuggingFace format)
+# Download via: huggingface-cli download fla-hub/rwkv7-0.4B-world \
+#   --local-dir models/rwkv7-0.4B-world
+#
+# Path: models/rwkv7-0.4B-world/
+# Expected file count: ~8 files (config.json, model.safetensors, tokenizer, etc.)
+# Expected size: ~864 MB
+# NOTE: This directory must be downloaded BEFORE transfer (not present in repo)
+
+# === Training Data ===
+# OpenWebText tokenized as RWKV tokens (npz format)
+# Path: preprocessed_data/owt_rwkv_tokens/train/
+# Expected file count: 304052 npz files
+# Expected size: ~165 MB
+
+# === Eval Data ===
+# 8 benchmark datasets, tokenized as npz files
+#
+# Path: preprocessed_data/wikitext2_full/tokens/val/
+# Expected file count: 999 npz files
+# Expected size: ~628 KB
+#
+# Path: preprocessed_data/lambada/test/
+# Expected file count: 5153 npz files
+# Expected size: ~2.8 MB
+#
+# Path: preprocessed_data/hellaswag/validation/
+# Expected file count: 10042 npz files
+# Expected size: ~5.4 MB
+#
+# Path: preprocessed_data/piqa/validation/
+# Expected file count: 1838 npz files
+# Expected size: ~983 KB
+#
+# Path: preprocessed_data/arc_easy/validation/
+# Expected file count: 570 npz files
+# Expected size: ~317 KB
+#
+# Path: preprocessed_data/arc_challenge/validation/
+# Expected file count: 299 npz files
+# Expected size: ~166 KB
+#
+# Path: preprocessed_data/winogrande/validation/
+# Expected file count: 1267 npz files
+# Expected size: ~698 KB
+#
+# Path: preprocessed_data/openbookqa/validation/
+# Expected file count: 500 npz files
+# Expected size: ~282 KB
+#
+# Total eval: 20668 npz files, ~11 MB
+
+# === Dependencies ===
+# FLA (Flash Linear Attention) 0.5.0 wheels for offline pip install
+# Install via: pip install vendor/*.whl
+#
+# Path: vendor/
+# Expected file count: 2 whl files
+#   - fla_core-0.5.0-py3-none-any.whl (595 KB)
+#   - flash_linear_attention-0.5.0-py3-none-any.whl (319 KB)
+# Expected size: ~1.1 MB
+
+# === Configs ===
+# Training configuration files (YAML, included in code transfer above)
+# Path: configs/
+# Expected file count: 38 files
+# Expected size: ~913 KB
+
+# =============================================================================
+# Summary Table
+# =============================================================================
+# Component                  | Files    | Size
+# ---------------------------|----------|--------
+# Code (./)                  | ~356     | ~16 MB
+# Model weights              | ~8       | ~864 MB
+# Training data (owt)        | 304052   | ~165 MB
+# Eval data (8 benchmarks)   | 20668    | ~11 MB
+# Vendor wheels              | 2        | ~1.1 MB
+# Configs (in code)          | 38       | ~913 KB
+# ---------------------------|----------|--------
+# TOTAL                      | ~325086  | ~1.06 GB
+# =============================================================================

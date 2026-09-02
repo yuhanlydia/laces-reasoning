@@ -1,0 +1,89 @@
+{
+  "ckpt_dir": "/inspire/hdd/global_user/zhangjiaquan-253108540222/research/DiffRwkv/outputs_relay/traj32x16-2.9B-singlez-bridge-v2-s2-birwkv-joint-scratch/step_00026000",
+  "n": 20,
+  "mean_lp_base": -18.0105,
+  "mean_lp_gold_full": -8.3242,
+  "mean_lp_rand": -17.2385,
+  "basis": [
+    {
+      "k": 0,
+      "norm_fro": 47.946,
+      "lp": -16.9327
+    },
+    {
+      "k": 1,
+      "norm_fro": 47.95,
+      "lp": -17.0028
+    },
+    {
+      "k": 2,
+      "norm_fro": 47.955,
+      "lp": -17.5067
+    },
+    {
+      "k": 3,
+      "norm_fro": 47.951,
+      "lp": -16.5081
+    },
+    {
+      "k": 4,
+      "norm_fro": 47.986,
+      "lp": -17.6307
+    },
+    {
+      "k": 5,
+      "norm_fro": 47.946,
+      "lp": -16.6458
+    },
+    {
+      "k": 6,
+      "norm_fro": 47.957,
+      "lp": -14.9612
+    },
+    {
+      "k": 7,
+      "norm_fro": 47.942,
+      "lp": -15.8814
+    },
+    {
+      "k": 8,
+      "norm_fro": 47.934,
+      "lp": -16.5305
+    },
+    {
+      "k": 9,
+      "norm_fro": 47.939,
+      "lp": -17.2333
+    },
+    {
+      "k": 10,
+      "norm_fro": 47.978,
+      "lp": -19.4731
+    },
+    {
+      "k": 11,
+      "norm_fro": 47.959,
+      "lp": -17.8523
+    },
+    {
+      "k": 12,
+      "norm_fro": 47.964,
+      "lp": -16.4359
+    },
+    {
+      "k": 13,
+      "norm_fro": 47.96,
+      "lp": -13.5952
+    },
+    {
+      "k": 14,
+      "norm_fro": 47.967,
+      "lp": -16.1408
+    },
+    {
+      "k": 15,
+      "norm_fro": 47.966,
+      "lp": -19.7716
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "ckpt_dir": "/inspire/hdd/global_user/zhangjiaquan-253108540222/research/DiffRwkv/outputs_relay/traj32x16-2.9B-singlez-bridge-v2-s2-birwkv-joint-scratch/step_00026000",
+  "n_train": 90,
+  "n_test": 45,
+  "tasks": [
+    "1agent",
+    "2agent",
+    "3agent"
+  ],
+  "r_h": 4,
+  "ws_dim": 256,
+  "n_steps": 4,
+  "epochs": 80,
+  "lr": 0.001,
+  "wd": 0.0,
+  "eps": 0.5,
+  "lambda_b": 0.0,
+  "use_layer_weight": false,
+  "accuracy": {
+    "text_concat": 1.0,
+    "inject_gold": 1.0,
+    "dynamic_writer": 0.0
+  },
+  "test_mse": 32.1307,
+  "gate_mse_passed": false,
+  "gate_acc_passed": false
+}

@@ -1,0 +1,67 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rwkv-diffusion-rnn"
+version = "0.1.0"
+description = "RELAY: Backbone-agnostic conditional text generation via latent communication through linear recurrent models"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "Apache-2.0"}
+authors = [
+    {name = "Jiaquan Zhang", email = "jiaquan.zhang@example.com"},
+]
+keywords = [
+    "rwkv",
+    "diffusion",
+    "language-model",
+    "recurrent-neural-network",
+    "text-generation",
+    "latent-diffusion",
+    "linear-attention",
+    "mamba",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+[project.urls]
+Homepage = "https://github.com/Yunbo-max/DiffRwkv"
+Repository = "https://github.com/Yunbo-max/DiffRwkv"
+Issues = "https://github.com/Yunbo-max/DiffRwkv/issues"
+
+[tool.setuptools]
+include-package-data = true
+py-modules = [
+  "benchmark",
+  "checkpoints",
+  "continuous_diffusion",
+  "data_simple",
+  "diffusion_process",
+  "evaluate",
+  "optimizer",
+  "preprocess_tokenize_text",
+  "pretrained_rwkv",
+  "sampling",
+  "time_conditioning",
+  "train_rwkv",
+  "utils",
+]
+
+[tool.setuptools.packages.find]
+include = ["rwkv_diffusion_rnn*", "models"]
+
+[tool.setuptools.package-data]
+rwkv_diffusion_rnn = [
+  "configs/*.yaml",
+  "configs/ablations/*.yaml",
+  "eval_checklist.md",
+]

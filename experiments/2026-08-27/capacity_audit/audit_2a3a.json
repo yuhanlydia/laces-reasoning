@@ -1,0 +1,1468 @@
+{
+  "ckpt_dir": "/inspire/hdd/global_user/zhangjiaquan-253108540222/research/DiffRwkv/outputs_relay/traj32x16-2.9B-singlez-bridge-v2-s2-birwkv-joint-scratch/step_00026000",
+  "n": 40,
+  "tasks": [
+    "2agent",
+    "3agent"
+  ],
+  "steps": 50,
+  "rank": 4,
+  "state_scale": 0.138671875,
+  "accuracy": {
+    "text_concat": 1.0,
+    "inject_gold": 0.925,
+    "R0_dual": 1.0,
+    "L1_z": 0.0,
+    "L2_alpha": 0.0,
+    "L3_delta": 0.0
+  },
+  "mean_mse": {
+    "L1_z": 32.0144,
+    "L2_alpha": 31.998,
+    "L3_delta": 24.0858
+  },
+  "mean_e16_full": 0.9999,
+  "mean_e16_delta": 0.9999,
+  "items": [
+    {
+      "gold": "wexford",
+      "gen": {
+        "text_concat": {
+          "text": "wexford.q: in this task, you are given a question and an ans",
+          "hit": true
+        },
+        "inject_gold": {
+          "text": "wexford\na:answer: in which town is the treasure hidden?q: gi",
+          "hit": true
+        },
+        "L1_z": {
+          "text": "a:answer: the treasure is hidden in the town ofq: in this ta",
+          "hit": false
+        },
+        "L2_alpha": {
+          "text": "a:answer: the treasure is hidden in the town ofq: in this ta",
+          "hit": false
+        },
+        "L3_delta": {
+          "text": "a:answer: the treasure is hidden in the town ofq: in this ta",
+          "hit": false
+        },
+        "R0_dual": {
+          "text": "wexford. question: what is the name of the treasure? answer:",
+          "hit": true
+        }
+      },
+      "mse": {
+        "L1_z": 32.01606750488281,
+        "L2_alpha": 31.99810028076172,
+        "L3_delta": 23.981367111206055
+      },
+      "e16_full": 0.9998554103076458,
+      "e16_delta": 0.9998783282935619
+    },
+    {
+      "gold": "brimmel",
+      "gen": {
+        "text_concat": {
+          "text": "brimmel.a: the old lighthouse is located in the town of brim",
+          "hit": true
+        },
+        "inject_gold": {
+          "text": "brimmel\na:answer: in which town is the antidote hidden?q: gi",
+          "hit": true
+        },
+        "L1_z": {
+          "text": "a:answer: noq: in this task, you are given a sentence and a ",
+          "hit": false
+        },
+        "L2_alpha": {
+          "text": "a:answer: noq: in this task, you are given a sentence and a ",
+          "hit": false
+        },
+        "L3_delta": {
+          "text": "a:answer: yesq: in this task, you are given a sentence from ",
+          "hit": false
+        },
+        "R0_dual": {
+          "text": "brimmel. question: what is the name of the old lighthouse? a",
+          "hit": true
+        }
+      },
+      "mse": {
+        "L1_z": 32.015323638916016,
+        "L2_alpha": 31.998517990112305,
+        "L3_delta": 24.105993270874023
+      },
+      "e16_full": 0.9998557586222887,
+      "e16_delta": 0.9998842384666204
+    },
+    {
+      "gold": "draymoor",
+      "gen": {
+        "text_concat": {
+          "text": "draymoor.q: in this task, you are given a question and an an",
+          "hit": true
+        },
+        "inject_gold": {
+          "text": "draymoor.\na:answer: in this task, you are given a question a",
+          "hit": true
+        },
+        "L1_z": {
+          "text": "a:answer: the manuscript is hidden in the town ofq: in this ",
+          "hit": false
+        },
+        "L2_alpha": {
+          "text": "a:answer: the manuscript is hidden in the town ofq: in this ",
+          "hit": false
+        },
+        "L3_delta": {
+          "text": "a:answer: in the town ofq: given a sentence in english langu",
+          "hit": false
+        },
+        "R0_dual": {
+          "text": "draymoor. question: where is the manuscript hidden? answer: ",
+          "hit": true
+        }
+      },
+      "mse": {
+        "L1_z": 32.01508712768555,
+        "L2_alpha": 31.998260498046875,
+        "L3_delta": 24.235261917114258
+      },
+      "e16_full": 0.9998518638312817,
+      "e16_delta": 0.9998811222612858
+    },
+    {
+      "gold": "thornfield",
+      "gen": {
+        "text_concat": {
+          "text": "thornfield.a: the answer to the question is \"thornfield\".q: ",
+          "hit": true
+        },
+        "inject_gold": {
+          "text": "the artifact.\na:answer: in this task, you are given a senten",
+          "hit": false
+        },
+        "L1_z": {
+          "text": "answer:a: the artifact is hidden in the town ofq: in this ta",
+          "hit": false
+        },
+        "L2_alpha": {
+          "text": "a:answer: the artifact is hidden in the town ofq: in this ta",
+          "hit": false
+        },
+        "L3_delta": {
+          "text": "a:answer: the artifact is hidden in the town ofq: in this ta",
+          "hit": false
+        },
+        "R0_dual": {
+          "text": "thornfield.\noutput:a: question: where is the artifact hidden",
+          "hit": true
+        }
+      },
+      "mse": {
+        "L1_z": 32.01642990112305,
+        "L2_alpha": 31.998083114624023,
+        "L3_delta": 24.147974014282227
+      },
+      "e16_full": 0.9998537264764309,
+      "e16_delta": 0.999879764392972
+    },
+    {
+      "gold": "ashby",
+      "gen": {
+        "text_concat": {
+          "text": "ashby.\nthe answer to this example can be: the answer to this",
+          "hit": true
+        },
+        "inject_gold": {
+          "text": "ashby\na:answer: in which town is the prototype hidden?q: giv",
+          "hit": true
+        },
+        "L1_z": {
+          "text": "a:answer: yesq: in this task, you are given a sentence in th",
+          "hit": false
+        },
+        "L2_alpha": {
+          "text": "a:answer: noq: in this task, you are given a sentence and a ",
+          "hit": false
+        },
+        "L3_delta": {
+          "text": "a:answer: the prototype is hidden in the town ofq: in this t",
+          "hit": false
+        },
+        "R0_dual": {
+          "text": "ashby. question: what is the name of the town where the prot",
+          "hit": true
+        }
+      },
+      "mse": {
+        "L1_z": 32.015472412109375,
+        "L2_alpha": 31.998136520385742,
+        "L3_delta": 23.950712203979492
+      },
+      "e16_full": 0.9998536556959152,
+      "e16_delta": 0.9998865816742182
+    },
+    {
+      "gold": "thornfield",
+      "gen": {
+        "text_concat": {
+          "text": "thornfield.\nthe answer to this example can be: the ledger is",
+          "hit": true
+        },
+        "inject_gold": {
+          "text": "thornfield.\na:answer: question: where is the ledger hidden? ",
+          "hit": true
+        },
+        "L1_z": {
+          "text": "a:answer: noq: in this task, you are given a sentence and a ",
+          "hit": false
+        },
+        "L2_alpha": {
+          "text": "a:answer: noq: in this task, you are given a sentence and a ",
+          "hit": false
+        },
+        "L3_delta": {
+          "text": "a:answer: the ledger is hidden in the town ofq: in this task",
+          "hit": false
+        },
+        "R0_dual": {
+          "text": "thornfield. question: what is the name of the town where the",
+          "hit": true
+        }
+      },
+      "mse": {
+        "L1_z": 32.01617431640625,
+        "L2_alpha": 31.998422622680664,
+        "L3_delta": 24.200965881347656
+      },
+      "e16_full": 0.999855125322938,
+      "e16_delta": 0.999886404722929
+    },
+    {
+      "gold": "brimmel",
+      "gen": {
+        "text_concat": {
+          "text": "brimmel.a: the answer to this question is not given directly",
+          "hit": true
+        },
+        "inject_gold": {
+          "text": "brimmel\na:answer: in this task, you are given a question and",
+          "hit": true
+        },
+        "L1_z": {
+          "text": "a:answer: noq: in this task, you are given a sentence and a ",
+          "hit": false
+        },
+        "L2_alpha": {
+          "text": "a:answer: noq: in this task, you are given a sentence and a ",
+          "hit": false
+        },
+        "L3_delta": {
+          "text": "a:answer: the relic is hidden in the town ofq: in this task,",
+          "hit": false
+        },
+        "R0_dual": {
+          "text": "brimmel. question: what is the name of the town where the re",
+          "hit": true
+        }
+      },
+      "mse": {
+        "L1_z": 32.015907287597656,
+        "L2_alpha": 31.99809455871582,
+        "L3_delta": 24.040836334228516
+      },
+      "e16_full": 0.9998523723334074,
+      "e16_delta": 0.9998832605779171
+    },
+    {
+      "gold": "halcyon",
+      "gen": {
+        "text_concat": {
+          "text": "halcyon.a: the answer to this question is \"halcyon\". this is",
+          "hit": true
+        },
+        "inject_gold": {
+          "text": "halcyon\na:answer: in this task, you are given a question and",
+          "hit": true
+        },
+        "L1_z": {
+          "text": "answer: the serum is hidden in the town of new york.q: in wh",
+          "hit": false
+        },
+        "L2_alpha": {
+          "text": "answer:a: noq: in this task, you are given a sentence and a ",
+          "hit": false
+        },
+        "L3_delta": {
+          "text": "answer:a: in the movie \"the town\", the serum is hidden in th",
+          "hit": false
+        },
+        "R0_dual": {
+          "text": "halcyon.\na:answer: the serum is hidden in the town of halcyo",
+          "hit": true
+        }
+      },
+      "mse": {
+        "L1_z": 32.0145378112793,
+        "L2_alpha": 31.998048782348633,
+        "L3_delta": 24.101003646850586
+      },
+      "e16_full": 0.9998542200773954,
+      "e16_delta": 0.999882597476244
+    },
+    {
+      "gold": "brimmel",
+      "gen": {
+        "text_concat": {
+          "text": "brimmel.\nthe answer to this example can be: the answer to th",
+          "hit": true
+        },
+        "inject_gold": {
+          "text": "brimmel.\na:answer: in this task, you are given a question an",
+          "hit": true
+        },
+        "L1_z": {
+          "text": "a:answer: noq: in this task, you are given a sentence and a ",
+          "hit": false
+        },
+        "L2_alpha": {
+          "text": "a:answer: noq: in this task, you are given a sentence and a ",
+          "hit": false
+        },
+        "L3_delta": {
+          "text": "a:answer: the blueprint is hidden in the town ofq: in this t",
+          "hit": false
+        },
+        "R0_dual": {
+          "text": "brimmel. question: what is the name of the town where the bl",
+          "hit": true
+        }
+      },
+      "mse": {
+        "L1_z": 32.015716552734375,
+        "L2_alpha": 31.998323440551758,
+        "L3_delta": 23.927013397216797
+      },
+      "e16_full": 0.9998553097248077,
+      "e16_delta": 0.9998878538608551
+    },
+    {
+      "gold": "corvane",
+      "gen": {
+        "text_concat": {
+          "text": "corvane.q: in this task, you are given a question and an ans",
+          "hit": true
+        },
+        "inject_gold": {
+          "text": "corvane.\na:answer: in this task, you are given a question an",
+          "hit": true
+        },
+        "L1_z": {
+          "text": "a:answer: the medallion is hidden in the town ofq: in this t",
+          "hit": false
+        },
+        "L2_alpha": {
+          "text": "answer:a: the medallion is hidden in the town ofq: in this t",
+          "hit": false
+        },
+        "L3_delta": {
+          "text": "a:answer: in the town ofq: given a sentence, generate a most",
+          "hit": false
+        },
+        "R0_dual": {
+          "text": "corvane.\na:answer: question: where is the medallion hidden? ",
+          "hit": true
+        }
+      },
+      "mse": {
+        "L1_z": 32.01519012451172,
+        "L2_alpha": 31.99824333190918,
+        "L3_delta": 24.227596282958984
+      },
+      "e16_full": 0.9998530466109514,
+      "e16_delta": 0.9998865257948637
+    },
+    {
+      "gold": "fenwick",
+      "gen": {
+        "text_concat": {
+          "text": "fenwick.\nthe answer to this example can be: agent a\nhere is ",
+          "hit": true
+        },
+        "inject_gold": {
+          "text": "fenwick\na:answer: in which town is the specimen hidden?q: gi",
+          "hit": true
+        },
+        "L1_z": {
+          "text": "answer:a: in the town ofq: detailed instructions: in this ta",
+          "hit": false
+        },
+        "L2_alpha": {
+          "text": "answer:a: in the town ofq: detailed instructions: in this ta",
+          "hit": false
+        },
+        "L3_delta": {
+          "text": "a:answer: in the town ofq: given a sentence in english langu",
+          "hit": false
+        },
+        "R0_dual": {
+          "text": "fenwick. question: where is the specimen hidden?answer: in t",
+          "hit": true
+        }
+      },
+      "mse": {
+        "L1_z": 32.01588439941406,
+        "L2_alpha": 31.998332977294922,
+        "L3_delta": 23.993602752685547
+      },
+      "e16_full": 0.9998573511838913,
+      "e16_delta": 0.9998881071805954
+    },
+    {
+      "gold": "marlow",
+      "gen": {
+        "text_concat": {
+          "text": "marlow.a: the brass compass is located in the town of marlow",
+          "hit": true
+        },
+        "inject_gold": {
+          "text": "marlow.\na:answer: in which town is the recording hidden?q: g",
+          "hit": true
+        },
+        "L1_z": {
+          "text": "a:answer: noq: in this task, you are given a sentence and a ",
+          "hit": false
+        },
+        "L2_alpha": {
+          "text": "a:answer: noq: in this task, you are given a sentence and a ",
+          "hit": false
+        },
+        "L3_delta": {
+          "text": "a:answer: the recording is hidden in the town ofq: in this t",
+          "hit": false
+        },
+        "R0_dual": {
+          "text": "marlow. question: what is the name of the recording? answer:",
+          "hit": true
+        }
+      },
+      "mse": {
+        "L1_z": 32.016475677490234,
+        "L2_alpha": 31.998064041137695,
+        "L3_delta": 24.007389068603516
+      },
+      "e16_full": 0.9998573921620846,
+      "e16_delta": 0.999885955825448
+    },
+    {
+      "gold": "draymoor",
+      "gen": {
+        "text_concat": {
+          "text": "draymoor.a: the answer to this question is not provided in t",
+          "hit": true
+        },
+        "inject_gold": {
+          "text": "draymoor.\na:answer: in which town is the cipher hidden?q: gi",
+          "hit": true
+        },
+        "L1_z": {
+          "text": "a:answer: yesq: in this task, you are given a sentence in th",
+          "hit": false
+        },
+        "L2_alpha": {
+          "text": "a:answer: the cipher is hidden in the town ofq: in this task",
+          "hit": false
+        },
+        "L3_delta": {
+          "text": "a:answer: the cipher is hidden in the town ofq: in this task",
+          "hit": false
+        },
+        "R0_dual": {
+          "text": "draymoor. question: what is the name of the town where the c",
+          "hit": true
+        }
+      },
+      "mse": {
+        "L1_z": 32.01664352416992,
+        "L2_alpha": 31.998428344726562,
+        "L3_delta": 24.108675003051758
+      },
+      "e16_full": 0.9998550899326801,
+      "e16_delta": 0.9998889267444611
+    },
+    {
+      "gold": "marlow",
+      "gen": {
+        "text_concat": {
+          "text": "marlow.q: in this task, you are given a question and an answ",
+          "hit": true
+        },
+        "inject_gold": {
+          "text": "marlow\na:answer: in which town is the sculpture hidden?q: gi",
+          "hit": true
+        },
+        "L1_z": {
+          "text": "answer:a: the sculpture is hidden in the town ofq: in this t",
+          "hit": false
+        },
+        "L2_alpha": {
+          "text": "answer:a: the sculpture is hidden in the town ofq: in this t",
+          "hit": false
+        },
+        "L3_delta": {
+          "text": "answer:a: the sculpture is hidden in the town ofq: in this t",
+          "hit": false
+        },
+        "R0_dual": {
+          "text": "marlow.\na:answer: the sculpture is hidden in the town of mar",
+          "hit": true
+        }
+      },
+      "mse": {
+        "L1_z": 32.01509094238281,
+        "L2_alpha": 31.997997283935547,
+        "L3_delta": 24.126623153686523
+      },
+      "e16_full": 0.9998512528836727,
+      "e16_delta": 0.9998769778758287
+    },
+    {
+      "gold": "thornfield",
+      "gen": {
+        "text_concat": {
+          "text": "thornfield.a: the answer to this question is not unique, as ",
+          "hit": true
+        },
+        "inject_gold": {
+          "text": "the vaccine.\na:answer: in this task, you are given a sentenc",
+          "hit": false
+        },
+        "L1_z": {
+          "text": "a:answer: the vaccine is hidden in the town ofq: in this tas",
+          "hit": false
+        },
+        "L2_alpha": {
+          "text": "a:answer: the vaccine is hidden in the town ofq: in this tas",
+          "hit": false
+        },
+        "L3_delta": {
+          "text": "a:answer: the vaccine is hidden in the town ofq: in this tas",
+          "hit": false
+        },
+        "R0_dual": {
+          "text": "thornfield.\noutput:a: in what town is the vaccine hidden?q: ",
+          "hit": true
+        }
+      },
+      "mse": {
+        "L1_z": 32.01620864868164,
+        "L2_alpha": 31.997997283935547,
+        "L3_delta": 24.2010498046875
+      },
+      "e16_full": 0.9998571928590536,
+      "e16_delta": 0.9998769611120224
+    },
+    {
+      "gold": "kestrel",
+      "gen": {
+        "text_concat": {
+          "text": "kestrel.a: the answer to this question is \"kestrel\". this is",
+          "hit": true
+        },
+        "inject_gold": {
+          "text": "kestrel\na:answer: in which town is the heirloom hidden?q: gi",
+          "hit": true
+        },
+        "L1_z": {
+          "text": "a:answer: the heirloom is hidden in the town ofq: in this ta",
+          "hit": false
+        },
+        "L2_alpha": {
+          "text": "a:answer: the heirloom is hidden in the town ofq: in this ta",
+          "hit": false
+        },
+        "L3_delta": {
+          "text": "a:answer: the heirloom is hidden in the town ofq: in this ta",
+          "hit": false
+        },
+        "R0_dual": {
+          "text": "kestrel. question: what is the name of the heirloom? answer:",
+          "hit": true
+        }
+      },
+      "mse": {
+        "L1_z": 32.01603698730469,
+        "L2_alpha": 31.998640060424805,
+        "L3_delta": 24.140869140625
+      },
+      "e16_full": 0.9998490065336227,
+      "e16_delta": 0.9998808540403843
+    },
+    {
+      "gold": "renwick",
+      "gen": {
+        "text_concat": {
+          "text": "renwick.q: in this task, you are given a question and an ans",
+          "hit": true
+        },
+        "inject_gold": {
+          "text": "renwick\na:answer: in this task, you are given a question and",
+          "hit": true
+        },
+        "L1_z": {
+          "text": "answer:a: yesq: in this task, you are given a sentence in th",
+          "hit": false
+        },
+        "L2_alpha": {
+          "text": "a:answer: noq: in this task, you are given a sentence and a ",
+          "hit": false
+        },
+        "L3_delta": {
+          "text": "a:answer: the diary is hidden in the town ofq: in this task,",
+          "hit": false
+        },
+        "R0_dual": {
+          "text": "renwick. question: where is the diary hidden? answer: in the",
+          "hit": true
+        }
+      },
+      "mse": {
+        "L1_z": 32.01438903808594,
+        "L2_alpha": 31.998096466064453,
+        "L3_delta": 23.971710205078125
+      },
+      "e16_full": 0.9998523276299238,
+      "e16_delta": 0.999881075695157
+    },
+    {
+      "gold": "ashby",
+      "gen": {
+        "text_concat": {
+          "text": "ashby.a: the sample is hidden by the old lighthouse, and the",
+          "hit": true
+        },
+        "inject_gold": {
+          "text": "ashby\na:answer: in this task, you are given a question and a",
+          "hit": true
+        },
+        "L1_z": {
+          "text": "a:answer: yesq: in this task, you are given a sentence in th",
+          "hit": false
+        },
+        "L2_alpha": {
+          "text": "a:answer: yesq: in this task, you are given a sentence in th",
+          "hit": false
+        },
+        "L3_delta": {
+          "text": "a:answer: the sample is hidden in the town ofq: in this task",
+          "hit": false
+        },
+        "R0_dual": {
+          "text": "ashby. question: where is the sample located? answer: in the",
+          "hit": true
+        }
+      },
+      "mse": {
+        "L1_z": 32.01591873168945,
+        "L2_alpha": 31.99827003479004,
+        "L3_delta": 24.172548294067383
+      },
+      "e16_full": 0.9998554792255163,
+      "e16_delta": 0.9998827241361141
+    },
+    {
+      "gold": "kestrel",
+      "gen": {
+        "text_concat": {
+          "text": "kestrel.a: the treasure is hidden by the velvet curtain, and",
+          "hit": true
+        },
+        "inject_gold": {
+          "text": "kestrel\na:answer: in which town is the treasure hidden?q: gi",
+          "hit": true
+        },
+        "L1_z": {
+          "text": "a:answer: the treasure is hidden in the town ofq: in this ta",
+          "hit": false
+        },
+        "L2_alpha": {
+          "text": "a:answer: the treasure is hidden in the town ofq: in this ta",
+          "hit": false
+        },
+        "L3_delta": {
+          "text": "a:answer: the treasure is hidden in the town ofq: in this ta",
+          "hit": false
+        },
+        "R0_dual": {
+          "text": "kestrel. question: what is the name of the town where the tr",
+          "hit": true
+        }
+      },
+      "mse": {
+        "L1_z": 32.014892578125,
+        "L2_alpha": 31.998079299926758,
+        "L3_delta": 24.236595153808594
+      },
+      "e16_full": 0.9998530521988869,
+      "e16_delta": 0.999878404662013
+    },
+    {
+      "gold": "thornfield",
+      "gen": {
+        "text_concat": {
+          "text": "thornfield.a: the answer to this question is not given direc",
+          "hit": true
+        },
+        "inject_gold": {
+          "text": "thornfield.\na:answer: in this task, you are given a question",
+          "hit": true
+        },
+        "L1_z": {
+          "text": "answer:a: yesq: in this task, you are given a sentence in th",
+          "hit": false
+        },
+        "L2_alpha": {
+          "text": "a:answer: noq: in this task, you are given a sentence and a ",
+          "hit": false
+        },
+        "L3_delta": {
+          "text": "answer:a: the antidote is hidden in the town ofq: in this ta",
+          "hit": false
+        },
+        "R0_dual": {
+          "text": "thornfield. question: what is the name of the antidote? answ",
+          "hit": true
+        }
+      },
+      "mse": {
+        "L1_z": 32.01603317260742,
+        "L2_alpha": 31.9985408782959,
+        "L3_delta": 24.253162384033203
+      },
+      "e16_full": 0.9998548589646816,
+      "e16_delta": 0.9998818915337324
+    },
+    {
+      "gold": "corvane",
+      "gen": {
+        "text_concat": {
+          "text": "corvanea:\nthe treasure is hidden in the town of corvane.in t",
+          "hit": true
+        },
+        "inject_gold": {
+          "text": "corvane\na:answer: in this task, you are given a question and",
+          "hit": true
+        },
+        "L1_z": {
+          "text": "a:answer: the treasure is hidden in the town ofq: in this ta",
+          "hit": false
+        },
+        "L2_alpha": {
+          "text": "a:answer: the treasure is hidden in the town ofq: in this ta",
+          "hit": false
+        },
+        "L3_delta": {
+          "text": "a:answer: noq: in this task, you are given a sentence and a ",
+          "hit": false
+        },
+        "R0_dual": {
+          "text": "corvane.\noutput:a: the treasure is hidden in the town of cor",
+          "hit": true
+        }
+      },
+      "mse": {
+        "L1_z": 32.01289367675781,
+        "L2_alpha": 31.99761199951172,
+        "L3_delta": 24.10275650024414
+      },
+      "e16_full": 0.9998535849153996,
+      "e16_delta": 0.9998751487582922
+    },
+    {
+      "gold": "kestrel",
+      "gen": {
+        "text_concat": {
+          "text": "kestrel.a: the black notebook is located at the iron gate.q:",
+          "hit": true
+        },
+        "inject_gold": {
+          "text": "kestrel\na:answer: in which town is the antidote hidden?q: gi",
+          "hit": true
+        },
+        "L1_z": {
+          "text": "a:answer: noq: in this task, you are given a sentence and a ",
+          "hit": false
+        },
+        "L2_alpha": {
+          "text": "a:answer: noq: in this task, you are given a sentence and a ",
+          "hit": false
+        },
+        "L3_delta": {
+          "text": "answer:a: yesq: in this task, you are given a sentence in th",
+          "hit": false
+        },
+        "R0_dual": {
+          "text": "kestrel. question: where is the antidote hidden?answer: in t",
+          "hit": true
+        }
+      },
+      "mse": {
+        "L1_z": 32.01316833496094,
+        "L2_alpha": 31.997575759887695,
+        "L3_delta": 24.081850051879883
+      },
+      "e16_full": 0.9998495858162642,
+      "e16_delta": 0.9998704772442579
+    },
+    {
+      "gold": "ashby",
+      "gen": {
+        "text_concat": {
+          "text": "ashby.a: the answer to this question is not immediately obvi",
+          "hit": true
+        },
+        "inject_gold": {
+          "text": "ashby.\na:answer: in this task, you are given a question and ",
+          "hit": true
+        },
+        "L1_z": {
+          "text": "a:answer: the manuscript is hidden in the town ofq: in this ",
+          "hit": false
+        },
+        "L2_alpha": {
+          "text": "a:answer: the manuscript is hidden in the town ofq: in this ",
+          "hit": false
+        },
+        "L3_delta": {
+          "text": "a:answer: yesq: in this task, you are given a sentence in th",
+          "hit": false
+        },
+        "R0_dual": {
+          "text": "ashby. question: what is the name of the town where the manu",
+          "hit": true
+        }
+      },
+      "mse": {
+        "L1_z": 32.01388168334961,
+        "L2_alpha": 31.997806549072266,
+        "L3_delta": 23.903791427612305
+      },
+      "e16_full": 0.9998545907437801,
+      "e16_delta": 0.9998825043439865
+    },
+    {
+      "gold": "halcyon",
+      "gen": {
+        "text_concat": {
+          "text": "halcyon.q: in this task, you are given a question and a cont",
+          "hit": true
+        },
+        "inject_gold": {
+          "text": "halcyon\na:answer: in this task, you are given a question and",
+          "hit": true
+        },
+        "L1_z": {
+          "text": "a:answer: the artifact is hidden in the town ofq: in this ta",
+          "hit": false
+        },
+        "L2_alpha": {
+          "text": "a:answer: the artifact is hidden in the town ofq: in this ta",
+          "hit": false
+        },
+        "L3_delta": {
+          "text": "a:answer: the artifact is hidden in the town ofq: in this ta",
+          "hit": false
+        },
+        "R0_dual": {
+          "text": "halcyon. question: what is the name of the town where the ar",
+          "hit": true
+        }
+      },
+      "mse": {
+        "L1_z": 32.01405334472656,
+        "L2_alpha": 31.998016357421875,
+        "L3_delta": 24.023435592651367
+      },
+      "e16_full": 0.9998492673039436,
+      "e16_delta": 0.9998807143419981
+    },
+    {
+      "gold": "halcyon",
+      "gen": {
+        "text_concat": {
+          "text": "halcyona: the prototype is hidden in the town of halcyon.q: ",
+          "hit": true
+        },
+        "inject_gold": {
+          "text": "halcyon\na:answer: in this task, you are given a question and",
+          "hit": true
+        },
+        "L1_z": {
+          "text": "a:answer: noq: in this task, you are given a sentence and a ",
+          "hit": false
+        },
+        "L2_alpha": {
+          "text": "a:answer: noq: in this task, you are given a sentence and a ",
+          "hit": false
+        },
+        "L3_delta": {
+          "text": "a:answer: the prototype is hidden in the town ofq: in this t",
+          "hit": false
+        },
+        "R0_dual": {
+          "text": "halcyon. question: what is the name of the town where the pr",
+          "hit": true
+        }
+      },
+      "mse": {
+        "L1_z": 32.01248550415039,
+        "L2_alpha": 31.997713088989258,
+        "L3_delta": 24.17588996887207
+      },
+      "e16_full": 0.9998474065214396,
+      "e16_delta": 0.999878466129303
+    },
+    {
+      "gold": "verdon",
+      "gen": {
+        "text_concat": {
+          "text": "verdon.a: the answer to this question is not provided in the",
+          "hit": true
+        },
+        "inject_gold": {
+          "text": "verdon.\na:answer: in this task, you are given a question and",
+          "hit": true
+        },
+        "L1_z": {
+          "text": "a:answer: noq: in this task, you are given a sentence and a ",
+          "hit": false
+        },
+        "L2_alpha": {
+          "text": "a:answer: noq: in this task, you are given a sentence and a ",
+          "hit": false
+        },
+        "L3_delta": {
+          "text": "answer:a: the ledger is hidden in the town ofq: in this task",
+          "hit": false
+        },
+        "R0_dual": {
+          "text": "verdon. question: where is the ledger hidden?answer: in the ",
+          "hit": true
+        }
+      },
+      "mse": {
+        "L1_z": 32.01395797729492,
+        "L2_alpha": 31.99781608581543,
+        "L3_delta": 23.942626953125
+      },
+      "e16_full": 0.9998531565070152,
+      "e16_delta": 0.9998853728175163
+    },
+    {
+      "gold": "fenwick",
+      "gen": {
+        "text_concat": {
+          "text": "fenwickin this task, you are given a sentence in the english",
+          "hit": true
+        },
+        "inject_gold": {
+          "text": "fenwick\na:answer: in this task, you are given a question and",
+          "hit": true
+        },
+        "L1_z": {
+          "text": "a:answer: noq: in this task, you are given a sentence and a ",
+          "hit": false
+        },
+        "L2_alpha": {
+          "text": "a:answer: noq: in this task, you are given a sentence and a ",
+          "hit": false
+        },
+        "L3_delta": {
+          "text": "a:answer: noq: in this task, you are given a sentence and a ",
+          "hit": false
+        },
+        "R0_dual": {
+          "text": "fenwick.\na:answer: the old lighthouse is located in the town",
+          "hit": true
+        }
+      },
+      "mse": {
+        "L1_z": 32.01272201538086,
+        "L2_alpha": 31.997838973999023,
+        "L3_delta": 24.061412811279297
+      },
+      "e16_full": 0.9998495653271675,
+      "e16_delta": 0.9998824540525675
+    },
+    {
+      "gold": "corvane",
+      "gen": {
+        "text_concat": {
+          "text": "corvane.a: the brass compass is located at the copper pipe, ",
+          "hit": true
+        },
+        "inject_gold": {
+          "text": "corvane.\na:answer: in this task, you are given a question an",
+          "hit": true
+        },
+        "L1_z": {
+          "text": "answer: the serum is hidden in the town of new york.q: in wh",
+          "hit": false
+        },
+        "L2_alpha": {
+          "text": "answer:a: noq: in this task, you are given a sentence and a ",
+          "hit": false
+        },
+        "L3_delta": {
+          "text": "answer: in this task, you are given a question and an answer",
+          "hit": false
+        },
+        "R0_dual": {
+          "text": "corvane. question: where is the serum hidden? answer: in the",
+          "hit": true
+        }
+      },
+      "mse": {
+        "L1_z": 32.01240539550781,
+        "L2_alpha": 31.997514724731445,
+        "L3_delta": 23.828052520751953
+      },
+      "e16_full": 0.9998558182269335,
+      "e16_delta": 0.9998821634799242
+    },
+    {
+      "gold": "marlow",
+      "gen": {
+        "text_concat": {
+          "text": "marlow.q: in this task, you are given a question and an answ",
+          "hit": true
+        },
+        "inject_gold": {
+          "text": "marlow.\na:answer: in which town is the blueprint hidden?q: g",
+          "hit": true
+        },
+        "L1_z": {
+          "text": "a:answer: noq: in this task, you are given a sentence and a ",
+          "hit": false
+        },
+        "L2_alpha": {
+          "text": "a:answer: the blueprint is hidden in the town ofq: in this t",
+          "hit": false
+        },
+        "L3_delta": {
+          "text": "a:answer: the blueprint is hidden in the town ofq: in this t",
+          "hit": false
+        },
+        "R0_dual": {
+          "text": "marlow. question: what is the name of the town where the blu",
+          "hit": true
+        }
+      },
+      "mse": {
+        "L1_z": 32.01411056518555,
+        "L2_alpha": 31.997404098510742,
+        "L3_delta": 23.992443084716797
+      },
+      "e16_full": 0.9998493082821369,
+      "e16_delta": 0.9998711701482534
+    },
+    {
+      "gold": "selby",
+      "gen": {
+        "text_concat": {
+          "text": "selbyin this task, you are given a sentence in the english l",
+          "hit": true
+        },
+        "inject_gold": {
+          "text": "selby\na:answer: in this task, you are given a question and a",
+          "hit": true
+        },
+        "L1_z": {
+          "text": "a:answer: the medallion is hidden in the town ofq: in this t",
+          "hit": false
+        },
+        "L2_alpha": {
+          "text": "a:answer: the medallion is hidden in the town ofq: in this t",
+          "hit": false
+        },
+        "L3_delta": {
+          "text": "a:answer: in the town ofq: given a sentence, generate a most",
+          "hit": false
+        },
+        "R0_dual": {
+          "text": "selby.explanation: the medallion is hidden in the town of se",
+          "hit": true
+        }
+      },
+      "mse": {
+        "L1_z": 32.0125846862793,
+        "L2_alpha": 31.99784278869629,
+        "L3_delta": 24.184829711914062
+      },
+      "e16_full": 0.9998501762747765,
+      "e16_delta": 0.999880000948906
+    },
+    {
+      "gold": "renwick",
+      "gen": {
+        "text_concat": {
+          "text": "renwickin this task, you are given a sentence in the english",
+          "hit": true
+        },
+        "inject_gold": {
+          "text": "renwick\na:answer: in this task, you are given a question and",
+          "hit": true
+        },
+        "L1_z": {
+          "text": "answer:a: in the town ofq: detailed instructions: in this ta",
+          "hit": false
+        },
+        "L2_alpha": {
+          "text": "answer:a: in the town ofq: detailed instructions: you are gi",
+          "hit": false
+        },
+        "L3_delta": {
+          "text": "answer:a: the specimen is hidden in the town ofq: in this ta",
+          "hit": false
+        },
+        "R0_dual": {
+          "text": "renwick.\noutput:a: the specimen is hidden in the town of ren",
+          "hit": true
+        }
+      },
+      "mse": {
+        "L1_z": 32.012847900390625,
+        "L2_alpha": 31.997623443603516,
+        "L3_delta": 24.095394134521484
+      },
+      "e16_full": 0.9998510964214802,
+      "e16_delta": 0.9998795967549086
+    },
+    {
+      "gold": "verdon",
+      "gen": {
+        "text_concat": {
+          "text": "verdonin this task, you are given a sentence in the english ",
+          "hit": true
+        },
+        "inject_gold": {
+          "text": "verdon\na:answer: in which town is the recording hidden?q: gi",
+          "hit": true
+        },
+        "L1_z": {
+          "text": "a:answer: noq: in this task, you are given a sentence and a ",
+          "hit": false
+        },
+        "L2_alpha": {
+          "text": "a:answer: noq: in this task, you are given a sentence and a ",
+          "hit": false
+        },
+        "L3_delta": {
+          "text": "a:answer: the recording is hidden in the town ofq: in this t",
+          "hit": false
+        },
+        "R0_dual": {
+          "text": "verdon.\noutput:a: the old lighthouse is located in the town ",
+          "hit": true
+        }
+      },
+      "mse": {
+        "L1_z": 32.013099670410156,
+        "L2_alpha": 31.997888565063477,
+        "L3_delta": 24.34625816345215
+      },
+      "e16_full": 0.999849921092391,
+      "e16_delta": 0.9998791329562664
+    },
+    {
+      "gold": "thornfield",
+      "gen": {
+        "text_concat": {
+          "text": "thornfield.a: the cipher is hidden by the green jacket, and ",
+          "hit": true
+        },
+        "inject_gold": {
+          "text": "thornfield.\na:answer: in this task, you are given a question",
+          "hit": true
+        },
+        "L1_z": {
+          "text": "a:answer: the cipher is hidden in the town ofq: in this task",
+          "hit": false
+        },
+        "L2_alpha": {
+          "text": "a:answer: the cipher is hidden in the town ofq: in this task",
+          "hit": false
+        },
+        "L3_delta": {
+          "text": "a:answer: the cipher is hidden in the town ofq: in this task",
+          "hit": false
+        },
+        "R0_dual": {
+          "text": "thornfield. question: what is the name of the town where the",
+          "hit": true
+        }
+      },
+      "mse": {
+        "L1_z": 32.01483154296875,
+        "L2_alpha": 31.997922897338867,
+        "L3_delta": 24.00702667236328
+      },
+      "e16_full": 0.9998526051640511,
+      "e16_delta": 0.999879002571106
+    },
+    {
+      "gold": "halcyon",
+      "gen": {
+        "text_concat": {
+          "text": "halcyonq: in this task, you are given a question and a conte",
+          "hit": true
+        },
+        "inject_gold": {
+          "text": "halcyon\na:answer: in this task, you are given a question and",
+          "hit": true
+        },
+        "L1_z": {
+          "text": "answer:a: the sculpture is hidden in the town ofq: in this t",
+          "hit": false
+        },
+        "L2_alpha": {
+          "text": "answer:a: the sculpture was hidden in a town calledq: in thi",
+          "hit": false
+        },
+        "L3_delta": {
+          "text": "a:answer: in which town is the sculpture hidden?q: given a s",
+          "hit": false
+        },
+        "R0_dual": {
+          "text": "halcyon.\noutput:a: the sculpture is hidden in the town of ha",
+          "hit": true
+        }
+      },
+      "mse": {
+        "L1_z": 32.012474060058594,
+        "L2_alpha": 31.99789810180664,
+        "L3_delta": 24.06630516052246
+      },
+      "e16_full": 0.9998476132750511,
+      "e16_delta": 0.9998767673969269
+    },
+    {
+      "gold": "brimmel",
+      "gen": {
+        "text_concat": {
+          "text": "brimmel.a: the answer to this question is not unique, as the",
+          "hit": true
+        },
+        "inject_gold": {
+          "text": "brimmel.\na:answer: in this task, you are given a question an",
+          "hit": true
+        },
+        "L1_z": {
+          "text": "a:answer: the vaccine is hidden in the town ofq: in this tas",
+          "hit": false
+        },
+        "L2_alpha": {
+          "text": "a:answer: the vaccine is hidden in the town ofq: in this tas",
+          "hit": false
+        },
+        "L3_delta": {
+          "text": "a:answer: the vaccine is hidden in the town ofq: in this tas",
+          "hit": false
+        },
+        "R0_dual": {
+          "text": "brimmel. question: what is the name of the town where the va",
+          "hit": true
+        }
+      },
+      "mse": {
+        "L1_z": 32.01348876953125,
+        "L2_alpha": 31.998159408569336,
+        "L3_delta": 23.78582000732422
+      },
+      "e16_full": 0.9998527113348246,
+      "e16_delta": 0.9998764675110579
+    },
+    {
+      "gold": "brimmel",
+      "gen": {
+        "text_concat": {
+          "text": "brimmela: the answer to this question is \"brimmel\". this is ",
+          "hit": true
+        },
+        "inject_gold": {
+          "text": "brimmel\na:answer: in this task, you are given a question and",
+          "hit": true
+        },
+        "L1_z": {
+          "text": "a:answer: the heirloom is hidden in the town ofq: in this ta",
+          "hit": false
+        },
+        "L2_alpha": {
+          "text": "a:answer: the heirloom is hidden in the town ofq: in this ta",
+          "hit": false
+        },
+        "L3_delta": {
+          "text": "a:answer: the heirloom is hidden in the town ofq: in this ta",
+          "hit": false
+        },
+        "R0_dual": {
+          "text": "brimmel.explanation: the heirloom is hidden in the town of b",
+          "hit": true
+        }
+      },
+      "mse": {
+        "L1_z": 32.013526916503906,
+        "L2_alpha": 31.998180389404297,
+        "L3_delta": 24.106399536132812
+      },
+      "e16_full": 0.9998493045568466,
+      "e16_delta": 0.9998804144561291
+    },
+    {
+      "gold": "corvane",
+      "gen": {
+        "text_concat": {
+          "text": "corvanein this task, you are given a sentence in the english",
+          "hit": true
+        },
+        "inject_gold": {
+          "text": "corvane\na:answer: in this task, you are given a question and",
+          "hit": true
+        },
+        "L1_z": {
+          "text": "answer:a: yesq: in this task, you are given a sentence in th",
+          "hit": false
+        },
+        "L2_alpha": {
+          "text": "a:answer: noq: in this task, you are given a sentence and a ",
+          "hit": false
+        },
+        "L3_delta": {
+          "text": "a:answer: noq: in this task, you are given a sentence and a ",
+          "hit": false
+        },
+        "R0_dual": {
+          "text": "corvane.\noutput:a: in which town is the diary hidden?q: give",
+          "hit": true
+        }
+      },
+      "mse": {
+        "L1_z": 32.01182174682617,
+        "L2_alpha": 31.99764633178711,
+        "L3_delta": 24.140642166137695
+      },
+      "e16_full": 0.999850956723094,
+      "e16_delta": 0.9998789373785257
+    },
+    {
+      "gold": "fenwick",
+      "gen": {
+        "text_concat": {
+          "text": "fenwickin this task, you are given a sentence in the english",
+          "hit": true
+        },
+        "inject_gold": {
+          "text": "fenwick\na:answer: in this task, you are given a question and",
+          "hit": true
+        },
+        "L1_z": {
+          "text": "a:answer: yesq: in this task, you are given a sentence in th",
+          "hit": false
+        },
+        "L2_alpha": {
+          "text": "a:answer: yesq: in this task, you are given a sentence in th",
+          "hit": false
+        },
+        "L3_delta": {
+          "text": "a:answer: the sample is hidden in the town ofq: in this task",
+          "hit": false
+        },
+        "R0_dual": {
+          "text": "fenwick.explanation: the sample is hidden in the town of fen",
+          "hit": true
+        }
+      },
+      "mse": {
+        "L1_z": 32.01305389404297,
+        "L2_alpha": 31.997831344604492,
+        "L3_delta": 24.301624298095703
+      },
+      "e16_full": 0.9998506717383862,
+      "e16_delta": 0.9998844359070063
+    },
+    {
+      "gold": "corvane",
+      "gen": {
+        "text_concat": {
+          "text": "corvanein this task, you are given a sentence in the english",
+          "hit": true
+        },
+        "inject_gold": {
+          "text": "corvane\na:answer: in this task, you are given a question and",
+          "hit": true
+        },
+        "L1_z": {
+          "text": "a:answer: the treasure is hidden in the town ofq: in this ta",
+          "hit": false
+        },
+        "L2_alpha": {
+          "text": "a:answer: the treasure is hidden in the town ofq: in this ta",
+          "hit": false
+        },
+        "L3_delta": {
+          "text": "a:answer: the treasure is hidden in the town ofq: in this ta",
+          "hit": false
+        },
+        "R0_dual": {
+          "text": "corvane. question: where is the treasure hidden? answer: in ",
+          "hit": true
+        }
+      },
+      "mse": {
+        "L1_z": 32.012718200683594,
+        "L2_alpha": 31.9977970123291,
+        "L3_delta": 24.05170440673828
+      },
+      "e16_full": 0.9998511038720608,
+      "e16_delta": 0.9998784940689802
+    },
+    {
+      "gold": "brimmel",
+      "gen": {
+        "text_concat": {
+          "text": "brimmela: the answer to this question is \"brimmel\". this is ",
+          "hit": true
+        },
+        "inject_gold": {
+          "text": "the red door.\na:answer: in this task, you are given a questi",
+          "hit": false
+        },
+        "L1_z": {
+          "text": "a:answer: noq: in this task, you are given a sentence and a ",
+          "hit": false
+        },
+        "L2_alpha": {
+          "text": "a:answer: noq: in this task, you are given a sentence and a ",
+          "hit": false
+        },
+        "L3_delta": {
+          "text": "a:answer: the antidote is hidden in the town ofq: in this ta",
+          "hit": false
+        },
+        "R0_dual": {
+          "text": "brimmel. question: where is the antidote hidden?answer: in t",
+          "hit": true
+        }
+      },
+      "mse": {
+        "L1_z": 32.0129508972168,
+        "L2_alpha": 31.997859954833984,
+        "L3_delta": 24.1030330657959
+      },
+      "e16_full": 0.9998526442795992,
+      "e16_delta": 0.9998781830072403
+    }
+  ]
+}

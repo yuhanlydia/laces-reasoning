@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+outputs*/
+preprocessed_data/
+checkpoints/
+hf_release/
+.venv/
+*.log
