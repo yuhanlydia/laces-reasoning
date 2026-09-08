@@ -6,11 +6,11 @@ fact fusion.
 
 ## Status
 
-**Not yet trained end-to-end.** The dynamic-basis writers (`dynlowrank`, `mixture`) are
-implemented and smoke-tested (shapes/dtypes verified) but have NOT run a full S1+S2 joint
-training. Everything below in "Key findings" comes from E1-E10 diagnostics on the FROZEN
-champion plus lightweight writer/reasoner training — these are the experiments that motivated
-the dynamic basis.
+**S1+S2 joint training is running.** The dynamic-basis writers (`dynlowrank`, `mixture`)
+are implemented and tested. The current 2.9B rank-32 run uses a frozen S0, batch size 4,
+and a 50,000-step schedule; its step-10,000 checkpoint is available on
+[Hugging Face](https://huggingface.co/humanlong/laces-2.9b-dynlowrank-r32-s0frozen-joint-b4-50k-fla03).
+The recurrent latent reasoner remains a separate follow-up training stage.
 
 ## What's here
 
