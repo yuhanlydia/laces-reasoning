@@ -21,10 +21,43 @@ The recurrent latent reasoner remains a separate follow-up training stage.
 - `train_state_hijacking_dit.py` — joint S1+S2 co-adapt training entry (champion recipe).
 - `scripts/eval/` — diagnostic + writer/reasoner training scripts (E1-E10):
   - `e9_decisive_writer.py` — FixedBasis-16/32 vs DynamicUV-r32 (fixed 32-D z input)
-  - `train_recurrent_reasoner.py` — recurrent latent reasoner (step-wise state trajectory distillation)
+  - `train_recurrent_reasoner.py` — variable-budget recurrent latent reasoner with per-step evidence re-query and cumulative state writes
   - `train_dynamic_writer*.py`, `train_behavioral*.py` — writer training variants (E5-E8)
   - `diag_capacity_audit.py`, `diag_rank_sweep.py`, `diag_behavioral_sensitivity.py` — capacity diagnostics (E1-E4)
 - `experiments/2026-08-27/`, `experiments/2026-08-28/` — full notes + results (checkpoints excluded).
+
+
+## Variable-depth reasoning training
+
+The recurrent reasoner is a post-training stage on top of a trained LACES checkpoint. It keeps
+its workspace in 32 dimensions but re-queries token-level facts at every compute step:
+
+```text
+H_facts, H_query
+      -> z0 in R^32
+      -> z1 -> z2 -> ... -> zR
+      -> C1, C2, ... -> CR
+```
+
+Here `C_r` is the **cumulative** RWKV-state correction after step `r`. Inference injects only
+`C_R`; it does not sum a full state write at every step. Training unrolls to `R_max=8` by
+default, supervises every intermediate budget, and trains steps after the oracle hop depth to
+remain at a stable solved state. This makes one checkpoint usable at external budgets
+`R in {1,2,4,8}`.
+
+Run:
+
+```bash
+CKPT_DIR=/path/to/trained-dynamic-basis-checkpoint \
+GPU=0 TRAIN_MAX_STEPS=8 EVAL_DEPTHS="1 2 4 8" RANK=32 \
+bash training/run_recurrent_reasoner.sh
+```
+
+The default evaluation mode is `sweep`, which reports accuracy and state error separately for
+`R=1,2,4,8`. `R_mode=auto` uses the known synthetic hop count and is an **oracle diagnostic**,
+not a deployable adaptive policy. Optional `EARLY_STOP=1` enables validation-calibrated
+convergence stopping based on latent and cumulative-state changes; there is not yet a learned
+halting head.
 
 ## Key findings (E1-E10, on frozen champion + lightweight writers)
 
