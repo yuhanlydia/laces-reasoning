@@ -42,6 +42,7 @@ DDIM sampler when ready to do unconditional generation.
 from __future__ import annotations
 from typing import List, Optional, Tuple, cast
 
+import inspect
 import math
 import torch
 import torch.nn as nn
@@ -56,6 +57,50 @@ try:
 except Exception:
     _chunk_rwkv7 = None
     _fused_mul_recurrent_rwkv7 = None
+
+_CHUNK_RWKV7_PARAMETERS = (
+    set(inspect.signature(_chunk_rwkv7).parameters) if _chunk_rwkv7 is not None else set()
+)
+
+
+def _call_chunk_rwkv7(r, w, k, v, a, b):
+    """Call FLA RWKV7 across the 0.3 and 0.4 keyword interfaces."""
+    kwargs = {
+        "r": r,
+        "w": w,
+        "k": k,
+        "v": v,
+        "a": a,
+        "b": b,
+        "scale": 1.0,
+        "initial_state": None,
+        "output_final_state": False,
+    }
+    if "safe_gate" in _CHUNK_RWKV7_PARAMETERS:
+        kwargs["safe_gate"] = True
+    if "chunk_size" in _CHUNK_RWKV7_PARAMETERS:
+        kwargs["chunk_size"] = 64
+    return _chunk_rwkv7(**kwargs)
+
+
+def _cache_layer_state(cache, layer_idx: int):
+    """Return the mutable per-layer state dict for FLA 0.3 or 0.4 caches."""
+    if hasattr(cache, "layers"):
+        layer = cache.layers[layer_idx]
+        if layer.state is None:
+            layer.state = {
+                "recurrent_state": None,
+                "attn_state": None,
+                "conv_state": None,
+                "ffn_state": None,
+            }
+        return layer.state
+    return cache.states[layer_idx]
+
+
+def _reset_cache_layer_seen_tokens(cache, layer_idx: int):
+    if hasattr(cache, "layers") and hasattr(cache.layers[layer_idx], "_seen_tokens"):
+        cache.layers[layer_idx]._seen_tokens = 0
 
 
 SUPPORTED_LATENT_RWKV_VARIANTS = ("fused_rwkv7", "albatross_goose")
@@ -243,19 +288,7 @@ class LatentRWKV7Direction(nn.Module):
         kk = kk.contiguous()
 
         if self.training and _chunk_rwkv7 is not None and x.is_cuda:
-            y, _ = _chunk_rwkv7(
-                r=r,
-                w=w,
-                k=k,
-                v=v,
-                a=-kk,
-                b=kk * a,
-                scale=1.0,
-                initial_state=None,
-                output_final_state=False,
-                safe_gate=True,
-                chunk_size=64,
-            )
+            y, _ = _call_chunk_rwkv7(r, w, k, v, -kk, kk * a)
         elif _fused_mul_recurrent_rwkv7 is not None and x.is_cuda:
             y, _ = _fused_mul_recurrent_rwkv7(r, w, k, v, kk, a, scale=1.0, output_final_state=False)
         else:
@@ -1153,7 +1186,7 @@ class StateInjectionDiTRELAY(nn.Module):
             return None
         losses = []
         for layer_idx, planned in enumerate(states_h):
-            current = cache.layers[layer_idx].state.get("recurrent_state") if cache.layers[layer_idx].state is not None else None
+            current = _cache_layer_state(cache, layer_idx).get("recurrent_state")
             if isinstance(current, torch.Tensor):
                 planned_f = planned.float()
                 current_f = current.detach().float()
@@ -1165,32 +1198,27 @@ class StateInjectionDiTRELAY(nn.Module):
 
     def blend_into_cache(self, cache, predicted_states, blend: float):
         for l, st in enumerate(predicted_states):
-            layer = cache.layers[l]
-            if layer.state is None:
-                layer.state = {
-                    "recurrent_state": None, "attn_state": None,
-                    "conv_state": None, "ffn_state": None,
-                }
-            current = layer.state.get("recurrent_state")
+            state = _cache_layer_state(cache, l)
+            current = state.get("recurrent_state")
             planned = st.to(torch.float32)
             layer_blend = self._effective_layer_blend(l, blend)
             if isinstance(layer_blend, torch.Tensor):
                 if isinstance(current, torch.Tensor):
-                    layer.state["recurrent_state"] = current.to(torch.float32) * (1.0 - layer_blend) + planned * layer_blend
+                    state["recurrent_state"] = current.to(torch.float32) * (1.0 - layer_blend) + planned * layer_blend
                 else:
-                    layer.state["recurrent_state"] = planned * layer_blend
+                    state["recurrent_state"] = planned * layer_blend
             else:
                 if isinstance(current, torch.Tensor) and 0.0 < layer_blend < 1.0:
-                    layer.state["recurrent_state"] = current.to(torch.float32) * (1.0 - layer_blend) + planned * layer_blend
+                    state["recurrent_state"] = current.to(torch.float32) * (1.0 - layer_blend) + planned * layer_blend
                 elif layer_blend <= 0.0 and isinstance(current, torch.Tensor):
-                    layer.state["recurrent_state"] = current.to(torch.float32)
+                    state["recurrent_state"] = current.to(torch.float32)
                 else:
-                    layer.state["recurrent_state"] = planned
+                    state["recurrent_state"] = planned
             for sub_key in ("conv_state", "ffn_state"):
-                cs = layer.state.get(sub_key)
+                cs = state.get(sub_key)
                 if isinstance(cs, torch.Tensor):
-                    layer.state[sub_key] = torch.zeros_like(cs)
-            layer._seen_tokens = 0
+                    state[sub_key] = torch.zeros_like(cs)
+            _reset_cache_layer_seen_tokens(cache, l)
         if hasattr(cache, "_seen_tokens"):
             cache._seen_tokens = 0
         return cache
@@ -1215,6 +1243,9 @@ class StateInjectionDiTRELAY(nn.Module):
             for layer in cache.layers:
                 if hasattr(layer, "state"):
                     layer.state = detach_obj(layer.state)
+            return cache
+        if hasattr(cache, "states"):
+            cache.states = detach_obj(cache.states)
             return cache
         return detach_obj(cache)
 
@@ -2374,18 +2405,13 @@ class StateInjectionDiTRELAY(nn.Module):
 
         # ── Step 5: inject into cache, reset counters ──
         for l, st in enumerate(predicted_states):
-            layer = cache.layers[l]
-            if layer.state is None:
-                layer.state = {
-                    "recurrent_state": None, "attn_state": None,
-                    "conv_state": None, "ffn_state": None,
-                }
-            layer.state["recurrent_state"] = st.to(torch.float32)
+            state = _cache_layer_state(cache, l)
+            state["recurrent_state"] = st.to(torch.float32)
             for sub_key in ("conv_state", "ffn_state"):
-                cs = layer.state.get(sub_key)
+                cs = state.get(sub_key)
                 if isinstance(cs, torch.Tensor):
-                    layer.state[sub_key] = torch.zeros_like(cs)
-            layer._seen_tokens = 0
+                    state[sub_key] = torch.zeros_like(cs)
+            _reset_cache_layer_seen_tokens(cache, l)
         if hasattr(cache, "_seen_tokens"):
             cache._seen_tokens = 0
 
@@ -2423,17 +2449,12 @@ class StateInjectionDiTRELAY(nn.Module):
     # ── DDIM sampler (inference: z_T ~ N(0,I) → ẑ_0) ──
     def inject_into_cache(self, cache, predicted_states):
         for l, st in enumerate(predicted_states):
-            layer = cache.layers[l]
-            if layer.state is None:
-                layer.state = {
-                    "recurrent_state": None, "attn_state": None,
-                    "conv_state": None, "ffn_state": None,
-                }
-            layer.state["recurrent_state"] = st.to(torch.float32)
+            state = _cache_layer_state(cache, l)
+            state["recurrent_state"] = st.to(torch.float32)
             for sub_key in ("conv_state", "ffn_state"):
-                cs = layer.state.get(sub_key)
+                cs = state.get(sub_key)
                 if isinstance(cs, torch.Tensor):
-                    layer.state[sub_key] = torch.zeros_like(cs)
+                    state[sub_key] = torch.zeros_like(cs)
         return cache
 
     @torch.no_grad()

@@ -4,7 +4,12 @@ import copy
 from collections.abc import Iterator
 from dataclasses import dataclass
 from types import SimpleNamespace
-from typing import Literal, Protocol, cast, final, override
+from typing import Literal, Protocol, cast, final
+
+try:
+    from typing import override
+except ImportError:  # Python 3.10/3.11; project metadata supports >=3.10.
+    from typing_extensions import override
 
 import torch
 import torch.nn as nn

@@ -95,6 +95,97 @@ def _report_load_mismatch(missing, unexpected, prefix=""):
         )
 
 
+def _set_module_trainable(module, trainable=True):
+    if module is None:
+        return
+    for parameter in module.parameters():
+        parameter.requires_grad = trainable
+
+
+def _module_grad_stats(module):
+    """Return cheap post-backward diagnostics for one trainable module."""
+    trainable_tensors = 0
+    grad_tensors = 0
+    nonzero_tensors = 0
+    norm_sq = 0.0
+    for parameter in module.parameters():
+        if not parameter.requires_grad:
+            continue
+        trainable_tensors += 1
+        if parameter.grad is None:
+            continue
+        grad_tensors += 1
+        grad_norm = float(parameter.grad.detach().norm().item())
+        if grad_norm > 0.0:
+            nonzero_tensors += 1
+        norm_sq += grad_norm * grad_norm
+    return {
+        "trainable_tensors": trainable_tensors,
+        "grad_tensors": grad_tensors,
+        "nonzero_tensors": nonzero_tensors,
+        "norm": norm_sq ** 0.5,
+    }
+
+
+def _set_s1_writer_trainable(model, trajectory_mode, trajectory_s1_mode):
+    """Enable the S1 writer that is actually used by the selected architecture."""
+    if trajectory_mode and trajectory_s1_mode in ("transformer", "rwkv", "birwkv"):
+        _set_module_trainable(model.trajectory_state_decoder)
+        model.state_basis.requires_grad = True
+        return
+
+    writer_type = str(getattr(model, "s1_writer_type", "fixed"))
+    if writer_type == "dynlowrank":
+        for name in ("s1_trunk", "s1_u_head", "s1_v_head"):
+            _set_module_trainable(getattr(model, name, None))
+    elif writer_type == "mixture":
+        model.s1_banks.requires_grad = True
+        _set_module_trainable(model.s1_gate)
+        _set_module_trainable(model.s1_alpha_head)
+    else:
+        _set_module_trainable(model.alpha_heads)
+        _set_module_trainable(model.alpha_trunk)
+        model.state_basis.requires_grad = True
+
+
+def _configure_trainable_parameters(
+    model,
+    *,
+    train_stage,
+    trajectory_mode,
+    trajectory_s1_mode,
+    s2_unfreeze_s1,
+    freeze_s2,
+    sft_response_only,
+    s2_unfreeze_s0=False,
+):
+    """Apply stage-specific freezing without dropping dynamic S1 writer parameters."""
+    for parameter in model.parameters():
+        parameter.requires_grad = False
+
+    if train_stage == 1:
+        _set_s1_writer_trainable(model, trajectory_mode, trajectory_s1_mode)
+        model.state_scale.requires_grad = True
+        if getattr(model, "use_learnable_blend", False) and getattr(model, "blend_gate_logit", None) is not None:
+            model.blend_gate_logit.requires_grad = True
+    elif train_stage == 2:
+        dit_module = model.trajectory_dit if trajectory_mode else model.latent_dit
+        _set_module_trainable(dit_module, not freeze_s2)
+        if s2_unfreeze_s1:
+            if s2_unfreeze_s0:
+                for name in ("encoder_trunk", "mu_head", "logvar_head"):
+                    _set_module_trainable(getattr(model, name, None))
+            _set_s1_writer_trainable(model, trajectory_mode, trajectory_s1_mode)
+            model.state_scale.requires_grad = True
+    elif train_stage == 3:
+        for name in ("encoder_trunk", "mu_head", "logvar_head", "aux_decoder"):
+            _set_module_trainable(getattr(model, name, None))
+
+    if sft_response_only:
+        _set_module_trainable(model.latent_dit, False)
+        _set_module_trainable(getattr(model, "trajectory_dit", None), False)
+
+
 def _resolve_num_train_steps(config, world_size):
     requested_steps = int(config.training.num_train_steps)
     mode = str(config.training.get("step_scale_mode", "none")).strip().lower()
@@ -272,10 +363,12 @@ def main(config):
     s2_align_w = float(config.loss.get("s2_align_loss_weight", 0.0))
     s2_coadapt_ce_w = float(config.loss.get("s2_coadapt_ce_loss_weight", 0.0))
     s2_coadapt_ce_checkpoint = bool(config.training.get("s2_coadapt_ce_checkpoint", True))
+    require_s1_writer_grad = bool(config.training.get("require_s1_writer_grad", False))
     s1_ldlm_mse_w = float(config.loss.get("s1_ldlm_mse_loss_weight", 0.0))
     s1_ldlm_max_sigma = float(config.training.get("s1_ldlm_max_sigma", 1.0))
     simcot_step_w = float(config.loss.get("simcot_step_loss_weight", 0.0))
     s2_unfreeze_s1 = bool(config.training.get("s2_unfreeze_s1", False))
+    s2_unfreeze_s0 = bool(config.training.get("s2_unfreeze_s0", False))
     freeze_s2 = bool(config.training.get("freeze_s2", False))
     s1_noise_cond = bool(config.training.get("s1_noise_cond", False))
     s1_global_anchor = bool(config.training.get("s1_global_anchor", False))
@@ -344,67 +437,30 @@ def main(config):
                 "with response_mask or prompt_lengths; do not combine it with S2/S3, "
                 "trajectory_mode, or prefix/suffix training flags."
             )
-    if train_stage == 1:
-        for p in model.parameters():
-            p.requires_grad = False
-        if trajectory_mode and trajectory_s1_mode in ("transformer", "rwkv", "birwkv"):
-            for p in model.trajectory_state_decoder.parameters():
-                p.requires_grad = True
-        else:
-            for p in model.alpha_heads.parameters():
-                p.requires_grad = True
-            if model.alpha_trunk is not None:
-                for p in model.alpha_trunk.parameters():
-                    p.requires_grad = True
-        model.state_basis.requires_grad = True
-        model.state_scale.requires_grad = True
-        if getattr(model, "use_learnable_blend", False) and getattr(model, "blend_gate_logit", None) is not None:
-            model.blend_gate_logit.requires_grad = True
-    elif train_stage == 2:
-        dit_module = model.trajectory_dit if (trajectory_mode or prefix_suffix_trajectory_s2) else model.latent_dit
-        dit_ids = {id(p) for p in dit_module.parameters()}
-        s1_modules = []
-        if s2_unfreeze_s1:
-            for _mn in ("encoder_trunk", "mu_head", "logvar_head", "alpha_heads", "alpha_trunk"):
-                _m = getattr(model, _mn, None)
-                if _m is not None:
-                    s1_modules.append(_m)
-        s1_ids = {id(p) for m in s1_modules for p in m.parameters()}
-        for p in model.parameters():
-            if id(p) not in dit_ids and id(p) not in s1_ids and p.requires_grad:
-                p.requires_grad = False
-        if not freeze_s2:
-            for p in dit_module.parameters():
-                p.requires_grad = True
-        else:
-            for p in dit_module.parameters():
-                p.requires_grad = False
-        if s2_unfreeze_s1:
-            for m in s1_modules:
-                for p in m.parameters():
-                    p.requires_grad = True
-            model.state_basis.requires_grad = True
-            model.state_scale.requires_grad = True
-    elif train_stage == 3:
-        for p in model.parameters():
-            p.requires_grad = False
-        for p in model.encoder_trunk.parameters():
-            p.requires_grad = True
-        for p in model.mu_head.parameters():
-            p.requires_grad = True
-        for p in model.logvar_head.parameters():
-            p.requires_grad = True
-        for p in model.aux_decoder.parameters():
-            p.requires_grad = True
-
-    if sft_response_only:
-        for p in model.latent_dit.parameters():
-            p.requires_grad = False
-        if getattr(model, "trajectory_dit", None) is not None:
-            for p in model.trajectory_dit.parameters():
-                p.requires_grad = False
+    _configure_trainable_parameters(
+        model,
+        train_stage=train_stage,
+        trajectory_mode=trajectory_mode or prefix_suffix_trajectory_s2,
+        trajectory_s1_mode=trajectory_s1_mode,
+        s2_unfreeze_s1=s2_unfreeze_s1,
+        s2_unfreeze_s0=s2_unfreeze_s0,
+        freeze_s2=freeze_s2,
+        sft_response_only=sft_response_only,
+    )
 
     trainable = [p for p in model.parameters() if p.requires_grad]
+    if is_main_process:
+        s0_modules = (model.encoder_trunk, model.mu_head, model.logvar_head)
+        s0_trainable = sum(
+            parameter.numel()
+            for module in s0_modules
+            for parameter in module.parameters()
+            if parameter.requires_grad
+        )
+        print(
+            f"Trainable after stage freeze: {sum(p.numel() for p in trainable)/1e6:.1f}M "
+            f"(S0 trainable: {s0_trainable/1e6:.1f}M)"
+        )
     optimizer = torch.optim.AdamW(
         trainable,
         lr=float(config.optimizer.lr),
@@ -858,6 +914,27 @@ def main(config):
 
         optimizer.zero_grad(set_to_none=True)
         loss.backward()
+        s1_writer_grad_norm = 0.0
+        if require_s1_writer_grad:
+            writer_type = str(getattr(raw_model, "s1_writer_type", "fixed"))
+            if writer_type != "dynlowrank":
+                raise RuntimeError(
+                    "training.require_s1_writer_grad currently requires "
+                    "model.s1_writer_type=dynlowrank"
+                )
+            missing_writer_grads = []
+            for module_name in ("s1_trunk", "s1_u_head", "s1_v_head"):
+                stats = _module_grad_stats(getattr(raw_model, module_name))
+                s1_writer_grad_norm += stats["norm"] ** 2
+                if stats["grad_tensors"] == 0 or stats["nonzero_tensors"] == 0:
+                    missing_writer_grads.append(module_name)
+            s1_writer_grad_norm = s1_writer_grad_norm ** 0.5
+            if missing_writer_grads:
+                raise RuntimeError(
+                    "Joint training produced no nonzero gradient for dynamic S1 writer "
+                    f"modules: {', '.join(missing_writer_grads)}. "
+                    "Refusing to continue a DiT-only run."
+                )
         torch.nn.utils.clip_grad_norm_(trainable, 1.0)
         optimizer.step()
 
@@ -873,6 +950,7 @@ def main(config):
             "s2_align": float(s2_align_loss.detach().item()),
             "s2_align_w": float(s2_align_active_w),
             "s2_coadapt_ce": float(s2_coadapt_ce_loss.detach().item()),
+            "s1_writer_grad_norm": s1_writer_grad_norm,
                 "s1_ldlm_mse": float(s1_ldlm_mse_loss.detach().item()),
                 "simcot_step": float(simcot_step_loss.detach().item()),
             "state_anchor": float(state_anchor_loss.detach().item()),
@@ -924,7 +1002,9 @@ def main(config):
                 log_line = (
                     f"[step {step+1}] "
                     f"loss={avg('loss'):.4f} diff={avg('diff'):.4f} "
-                    f"traj_delta={avg('traj_delta'):.4f}{align_str}{ldlm_str}  | "
+                    f"coadapt_ce={avg('s2_coadapt_ce'):.4f} "
+                    f"traj_delta={avg('traj_delta'):.4f}{align_str}{ldlm_str} "
+                    f"s1_grad={avg('s1_writer_grad_norm'):.3e}  | "
                     f"z_norm={avg('z_norm'):.3f} "
                     f"eps_pred_norm={avg('eps_pred_norm'):.3f} "
                     f"t_mean={avg('t_mean'):.2f} | "
