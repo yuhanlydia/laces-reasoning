@@ -1,6 +1,7 @@
 name: Temporary repository export
 
 on:
+  workflow_dispatch:
   push:
     branches: [main]
     paths:
