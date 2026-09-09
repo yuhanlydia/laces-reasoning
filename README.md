@@ -1,5 +1,17 @@
 # LACES + Dynamic-Basis + Recurrent Latent Reasoning
 
+## ARC-AGI-1 recurrent latent reasoning
+
+The ARC pipeline freezes the RWKV 2.9B backbone and the 30k joint LACES model,
+caches projected token/state features once, then trains a 32-dimensional recurrent
+latent reasoner, dynamic state writer, and direct grid decoder with supervision at
+R=1/2/4/8. It uses all 400 official ARC-AGI-1 training tasks with a deterministic
+360/40 train/development split and keeps the 400 official evaluation tasks isolated.
+
+See
+[`experiments/2026-09-09/arc_agi1_recurrent_reasoner/README.md`](experiments/2026-09-09/arc_agi1_recurrent_reasoner/README.md)
+for the staged commands, capability gates, checkpoints, and evaluation outputs.
+
 Extension of the LACES / State-Hijacking RELAY line: replace the fixed 16-basis S1 writer with
 input-dependent writable directions, and add a trained recurrent latent reasoner for multi-hop
 fact fusion.

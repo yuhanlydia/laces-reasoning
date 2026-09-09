@@ -116,6 +116,32 @@ def test_dynamic_writer_uses_per_head_u_and_v_with_shared_parameters():
     assert sum(p.numel() for p in writer.parameters()) < 20_000
 
 
+def test_writer_factor_pooling_matches_materialized_state_pooling():
+    torch.manual_seed(23)
+    model = RecurrentReasoner(
+        hidden_dim=8, num_layers=2, num_heads=3, head_dim=8, z_dim=4,
+        context_dim=8, writer_rank=3, writer_hidden=16, state_pool_size=2,
+    )
+    z = torch.randn(2, 4)
+    materialized = recurrent_state_summary(model.writer(z), pool_size=2)
+    direct = model.writer.pooled(z, pool_size=2)
+    assert torch.allclose(direct, materialized, atol=2e-6, rtol=2e-5)
+
+
+def test_compact_trace_does_not_materialize_full_states():
+    model = RecurrentReasoner(
+        hidden_dim=8, num_layers=2, num_heads=2, head_dim=4, z_dim=4,
+        context_dim=8, writer_rank=2, writer_hidden=16, state_pool_size=2,
+    )
+    trace = model(
+        torch.randn(1, 5, 8), torch.randn(1, 2, 8), steps=3,
+        base_state_features=torch.randn(1, 16), materialize_states=False,
+    )
+    assert trace.cumulative_states == []
+    assert len(trace.pooled_corrections) == 4
+    assert trace.pooled_corrections[-1].shape == (1, 16)
+
+
 def test_cumulative_targets_are_relative_to_one_context_not_incremental():
     context = _state(10.0)
     oracle_states = [_state(11.0), _state(13.0), _state(16.0)]

@@ -76,6 +76,7 @@ class ReasoningTrace:
     latents: list[torch.Tensor]
     contexts: list[torch.Tensor]
     cumulative_states: list[StateList]
+    pooled_corrections: list[torch.Tensor]
     attention_weights: list[torch.Tensor]
 
 
@@ -142,7 +143,7 @@ class SharedDynamicStateWriter(nn.Module):
             persistent=False,
         )
 
-    def forward(self, z: torch.Tensor) -> StateList:
+    def _factors(self, z: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         if z.ndim == 1:
             z = z.unsqueeze(0)
         if z.ndim != 2 or z.shape[-1] != self.z_dim:
@@ -166,9 +167,37 @@ class SharedDynamicStateWriter(nn.Module):
         gain = F.softplus(self.gain_head(features)).reshape(
             batch, self.num_layers, self.num_heads, 1, 1
         )
-        scale = self.log_global_scale.exp() / sqrt(float(self.rank))
-        matrices = torch.matmul(U, V.transpose(-1, -2)) * gain * scale
+        gain = gain * (self.log_global_scale.exp() / sqrt(float(self.rank)))
+        return U, V, gain
+
+    def forward(self, z: torch.Tensor) -> StateList:
+        U, V, gain = self._factors(z)
+        matrices = torch.matmul(U, V.transpose(-1, -2)) * gain
         return [matrices[:, layer] for layer in range(self.num_layers)]
+
+    def pooled(self, z: torch.Tensor, *, pool_size: int) -> torch.Tensor:
+        """Pool low-rank factors directly, without constructing D x D states.
+
+        Adaptive average pooling is separable and linear, so P(UV^T)Q^T equals
+        (PU)(QV)^T up to floating-point rounding.
+        """
+        if pool_size <= 0:
+            raise ValueError("pool_size must be positive")
+        U, V, gain = self._factors(z)
+        batch = U.shape[0]
+
+        def pool_factor(factor: torch.Tensor) -> torch.Tensor:
+            # [B,L,H,D,R] -> pool the D axis independently for every rank column.
+            packed = factor.permute(0, 1, 2, 4, 3).reshape(-1, self.rank, self.head_dim)
+            pooled = F.adaptive_avg_pool1d(packed.float(), pool_size).to(factor.dtype)
+            return pooled.reshape(
+                batch, self.num_layers, self.num_heads, self.rank, pool_size
+            ).permute(0, 1, 2, 4, 3)
+
+        pooled_u = pool_factor(U)
+        pooled_v = pool_factor(V)
+        matrices = torch.matmul(pooled_u, pooled_v.transpose(-1, -2)) * gain
+        return matrices.reshape(batch, -1)
 
 
 class RecurrentReasoner(nn.Module):
@@ -250,6 +279,7 @@ class RecurrentReasoner(nn.Module):
         steps: int,
         base_states: Sequence[torch.Tensor] | None = None,
         base_state_features: torch.Tensor | None = None,
+        materialize_states: bool = True,
     ) -> ReasoningTrace:
         if steps < 0:
             raise ValueError("steps must be non-negative")
@@ -303,11 +333,10 @@ class RecurrentReasoner(nn.Module):
         latents = [z]
         contexts: list[torch.Tensor] = []
         attention_weights: list[torch.Tensor] = []
-        cumulative_states = [self.writer(z)]
+        pooled_corrections = [self.writer.pooled(z, pool_size=self.state_pool_size)]
+        cumulative_states = [self.writer(z)] if materialize_states else []
         if base_states is not None or base_summary is not None:
-            correction_summary = recurrent_state_summary(
-                cumulative_states[0], pool_size=self.state_pool_size
-            ).to(dtype=facts.dtype)
+            correction_summary = pooled_corrections[0].to(dtype=facts.dtype)
             current_summary = (
                 base_summary + correction_summary
                 if base_summary is not None
@@ -337,11 +366,13 @@ class RecurrentReasoner(nn.Module):
             contexts.append(context)
             attention_weights.append(weights)
             latents.append(z)
-            cumulative_states.append(self.writer(z))
+            pooled_corrections.append(
+                self.writer.pooled(z, pool_size=self.state_pool_size)
+            )
+            if materialize_states:
+                cumulative_states.append(self.writer(z))
             if base_states is not None or base_summary is not None:
-                correction_summary = recurrent_state_summary(
-                    cumulative_states[-1], pool_size=self.state_pool_size
-                ).to(dtype=facts.dtype)
+                correction_summary = pooled_corrections[-1].to(dtype=facts.dtype)
                 current_summary = (
                     base_summary + correction_summary
                     if base_summary is not None
@@ -355,6 +386,7 @@ class RecurrentReasoner(nn.Module):
             latents=latents,
             contexts=contexts,
             cumulative_states=cumulative_states,
+            pooled_corrections=pooled_corrections,
             attention_weights=attention_weights,
         )
 

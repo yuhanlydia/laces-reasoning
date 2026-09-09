@@ -20,7 +20,7 @@ sys.path.insert(0, str(REPO))
 from models.arc_feature_cache import ArcFeatureRecord, load_feature_record
 from models.arc_grid_adapter import ArcGridDecoder, decode_grid, recurrent_arc_objective
 from models.arc_metrics import evaluate_arc_predictions
-from models.recurrent_latent_reasoner import RecurrentReasoner, recurrent_state_summary
+from models.recurrent_latent_reasoner import RecurrentReasoner
 
 
 def split_training_task_ids(
@@ -108,40 +108,39 @@ def _to_device(record: ArcFeatureRecord, device: torch.device):
     )
 
 
-def _state_at_depth(trace, base_state: torch.Tensor, depth: int, pool_size: int) -> torch.Tensor:
-    correction = recurrent_state_summary(
-        trace.cumulative_states[depth], pool_size=pool_size
-    ).to(dtype=base_state.dtype)
-    return base_state + correction
-
-
 @torch.no_grad()
 def evaluate_paths(reasoner, decoder, paths: list[Path], device, depths=(1, 2, 4, 8)):
     reasoner.eval()
     decoder.eval()
     predictions = {depth: {} for depth in depths}
     gold: dict[str, list[torch.Tensor]] = {}
-    elapsed = 0.0
+    elapsed = {depth: 0.0 for depth in depths}
     for path in paths:
         record = load_feature_record(path)
         evidence, query, base, targets = _to_device(record, device)
-        started = time.perf_counter()
-        trace = reasoner(evidence, query, steps=max(depths), base_state_features=base)
-        elapsed += time.perf_counter() - started
         task_gold = gold.setdefault(record.task_id, [])
         while len(task_gold) <= record.query_index:
             task_gold.append(torch.empty(0))
         task_gold[record.query_index] = record.target_grid.cpu()
         for depth in depths:
-            state = _state_at_depth(trace, base, depth, reasoner.state_pool_size)
-            output = decoder(trace.latents[depth], query.unsqueeze(0) if query.ndim == 2 else query, state)
+            if device.type == "cuda":
+                torch.cuda.synchronize(device)
+            started = time.perf_counter()
+            trace = reasoner(
+                evidence, query, steps=depth, base_state_features=base,
+                materialize_states=False,
+            )
+            output = decoder(trace.pooled_corrections[depth])
+            if device.type == "cuda":
+                torch.cuda.synchronize(device)
+            elapsed[depth] += time.perf_counter() - started
             task_predictions = predictions[depth].setdefault(record.task_id, [])
             while len(task_predictions) <= record.query_index:
                 task_predictions.append([])
             task_predictions[record.query_index] = [decode_grid(output)[0]]
     metrics = {depth: evaluate_arc_predictions(gold, value) for depth, value in predictions.items()}
-    for value in metrics.values():
-        value["mean_runtime_seconds"] = elapsed / max(len(paths), 1)
+    for depth, value in metrics.items():
+        value["mean_runtime_seconds"] = elapsed[depth] / max(len(paths), 1)
     return metrics
 
 
@@ -155,8 +154,7 @@ def build_models(sample: ArcFeatureRecord, args, device):
         state_pool_size=args.state_pool_size,
     ).to(device)
     decoder = ArcGridDecoder(
-        z_dim=args.z_dim, query_dim=int(sample.query.shape[-1]), state_dim=state_dim,
-        model_dim=args.decoder_dim,
+        state_dim=state_dim, model_dim=args.decoder_dim,
     ).to(device)
     return reasoner, decoder
 
@@ -176,7 +174,8 @@ def parse_args(argv=None):
     parser.add_argument("--lr", type=float, default=3e-4)
     parser.add_argument("--weight_decay", type=float, default=1e-4)
     parser.add_argument("--max_grad_norm", type=float, default=1.0)
-    parser.add_argument("--depths", type=int, nargs="+", default=[1, 2, 4, 8])
+    parser.add_argument("--depths", type=int, nargs="+", default=[1, 2, 4, 8, 16])
+    parser.add_argument("--random_depth", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--gate_exact", type=float, default=0.95)
     parser.add_argument("--resume", type=Path)
     parser.add_argument("--num_layers", type=int, default=32)
@@ -246,10 +245,14 @@ def main(argv=None):
         record = load_feature_record(order[position])
         position += 1
         evidence, query, base, targets = _to_device(record, device)
+        supervised_depths = [random.choice(args.depths)] if args.random_depth else args.depths
         with torch.autocast(device_type=device.type, dtype=torch.bfloat16, enabled=device.type == "cuda"):
-            trace = reasoner(evidence, query, steps=max(args.depths), base_state_features=base)
+            trace = reasoner(
+                evidence, query, steps=max(supervised_depths), base_state_features=base,
+                materialize_states=False,
+            )
             loss, train_metrics = recurrent_arc_objective(
-                decoder, trace, query, base, targets, depths=args.depths
+                decoder, trace, targets, depths=supervised_depths
             )
             scaled_loss = loss / args.grad_accum
         if not bool(torch.isfinite(loss)):
@@ -269,7 +272,10 @@ def main(argv=None):
             scheduler.step()
         else:
             grad_norm = torch.tensor(float("nan"))
-        event = {"step": step, "epoch": epoch, **train_metrics, "lr": optimizer.param_groups[0]["lr"]}
+        event = {
+            "step": step, "epoch": epoch, "sampled_depth": max(supervised_depths),
+            **train_metrics, "lr": optimizer.param_groups[0]["lr"],
+        }
         if step == 1 or step % 10 == 0:
             print(json.dumps(event), flush=True)
             with history_path.open("a") as handle:

@@ -24,7 +24,7 @@ def parse_args(argv=None):
     parser.add_argument("--split", choices=["training", "evaluation"], default="evaluation")
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--device", default="cuda:0")
-    parser.add_argument("--depths", type=int, nargs="+", default=[1, 2, 4, 8])
+    parser.add_argument("--depths", type=int, nargs="+", default=[1, 2, 4, 8, 16])
     return parser.parse_args(argv)
 
 

@@ -18,8 +18,8 @@ def _targets():
 
 
 def test_decoder_shapes_and_target_mask():
-    decoder = ArcGridDecoder(z_dim=8, query_dim=12, state_dim=16, model_dim=24)
-    output = decoder(torch.randn(2, 8), torch.randn(2, 5, 12), torch.randn(2, 16))
+    decoder = ArcGridDecoder(state_dim=16, model_dim=24)
+    output = decoder(torch.randn(2, 16))
     assert output.row_logits.shape == (2, 30)
     assert output.col_logits.shape == (2, 30)
     assert output.cell_logits.shape == (2, 30, 30, 10)
@@ -64,13 +64,15 @@ def test_depth_two_objective_reaches_recurrent_cell_and_writer():
         z_dim=8, context_dim=16, writer_rank=2, writer_hidden=16,
         state_summary_dim=16, state_pool_size=2,
     )
-    decoder = ArcGridDecoder(z_dim=8, query_dim=12, state_dim=16, model_dim=24)
+    decoder = ArcGridDecoder(state_dim=16, model_dim=24)
     facts = torch.randn(1, 7, 12)
     query = torch.randn(1, 4, 12)
     base = torch.randn(1, 16)
-    trace = reasoner(facts, query, steps=2, base_state_features=base)
+    trace = reasoner(
+        facts, query, steps=2, base_state_features=base, materialize_states=False
+    )
     loss, metrics = recurrent_arc_objective(
-        decoder, trace, query, base, [torch.tensor([[1, 2], [3, 4]])], depths=(1, 2)
+        decoder, trace, [torch.tensor([[1, 2], [3, 4]])], depths=(1, 2)
     )
     loss.backward()
 
