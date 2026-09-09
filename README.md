@@ -124,3 +124,15 @@ recurrent reasoner on top, or is dynamic directions alone enough?
 
 Champion (frozen backbone + S0): `outputs_relay/traj32x16-2.9B-singlez-bridge-v2-s2-birwkv-joint-scratch/step_00026000`
 (hosted on HuggingFace `SII-Jiaquan/StateDiffRWKV-2.9B-512-pretrained`, not in this repo).
+## MMLU-Pro recurrent reasoning
+
+The language-native recurrent reasoning experiment uses frozen RWKV features and
+base answer logits on MMLU-Pro, then trains only the recurrent reasoner and dynamic
+state writer residual head:
+
+```bash
+bash training/run_mmlu_pro_recurrent_reasoner.sh
+```
+
+See `experiments/2026-09-09/mmlu_pro_recurrent_reasoner/README.md` for the split
+semantics and evaluation protocol.
