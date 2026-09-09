@@ -249,6 +249,7 @@ class RecurrentReasoner(nn.Module):
         *,
         steps: int,
         base_states: Sequence[torch.Tensor] | None = None,
+        base_state_features: torch.Tensor | None = None,
     ) -> ReasoningTrace:
         if steps < 0:
             raise ValueError("steps must be non-negative")
@@ -261,7 +262,20 @@ class RecurrentReasoner(nn.Module):
         query_features = self.query_projection(query)
         query_summary = query_features.mean(dim=1)
 
-        if base_states is None:
+        if base_states is not None and base_state_features is not None:
+            raise ValueError("pass base_states or base_state_features, not both")
+        if base_state_features is not None:
+            base_summary = base_state_features.to(device=facts.device, dtype=facts.dtype)
+            if base_summary.ndim == 1:
+                base_summary = base_summary.unsqueeze(0)
+            if base_summary.shape != (facts.shape[0], self.state_summary_dim):
+                raise ValueError(
+                    f"expected base_state_features [{facts.shape[0]},{self.state_summary_dim}], "
+                    f"got {tuple(base_summary.shape)}"
+                )
+            state_feedback = self.state_feedback_projection(base_summary)
+        elif base_states is None:
+            base_summary = None
             state_feedback = torch.zeros(
                 facts.shape[0], self.context_dim,
                 device=facts.device, dtype=facts.dtype,
@@ -290,15 +304,17 @@ class RecurrentReasoner(nn.Module):
         contexts: list[torch.Tensor] = []
         attention_weights: list[torch.Tensor] = []
         cumulative_states = [self.writer(z)]
-        if base_states is not None:
+        if base_states is not None or base_summary is not None:
+            correction_summary = recurrent_state_summary(
+                cumulative_states[0], pool_size=self.state_pool_size
+            ).to(dtype=facts.dtype)
+            current_summary = (
+                base_summary + correction_summary
+                if base_summary is not None
+                else correction_summary
+            )
             state_feedback = self.state_feedback_projection(
-                recurrent_state_summary(
-                    [
-                        base + correction
-                        for base, correction in zip(base_states, cumulative_states[0])
-                    ],
-                    pool_size=self.state_pool_size,
-                ).to(dtype=facts.dtype)
+                current_summary
             )
 
         for _ in range(steps):
@@ -322,15 +338,17 @@ class RecurrentReasoner(nn.Module):
             attention_weights.append(weights)
             latents.append(z)
             cumulative_states.append(self.writer(z))
-            if base_states is not None:
+            if base_states is not None or base_summary is not None:
+                correction_summary = recurrent_state_summary(
+                    cumulative_states[-1], pool_size=self.state_pool_size
+                ).to(dtype=facts.dtype)
+                current_summary = (
+                    base_summary + correction_summary
+                    if base_summary is not None
+                    else correction_summary
+                )
                 state_feedback = self.state_feedback_projection(
-                    recurrent_state_summary(
-                        [
-                            base + correction
-                            for base, correction in zip(base_states, cumulative_states[-1])
-                        ],
-                        pool_size=self.state_pool_size,
-                    ).to(dtype=facts.dtype)
+                    current_summary
                 )
 
         return ReasoningTrace(

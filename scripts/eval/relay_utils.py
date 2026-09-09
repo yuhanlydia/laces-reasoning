@@ -33,12 +33,15 @@ def ensure_repo_in_path():
 def load_relay_model(
     ckpt_dir: str,
     device: str = "cuda",
+    rwkv_path: Optional[str] = None,
 ) -> Tuple[torch.nn.Module, torch.nn.Module, object, dict, object]:
     """Load StateInjectionDiTRELAY from checkpoint.
 
     Args:
         ckpt_dir: Path to checkpoint directory containing model.pt
         device: Device to load model on
+        rwkv_path: Optional local frozen-backbone override. This is useful when
+            the checkpoint stores a path relative to a different checkout.
 
     Returns:
         (model, rwkv, tokenizer, ckpt, cfg)
@@ -51,7 +54,7 @@ def load_relay_model(
     ckpt = torch.load(ckpt_path, map_location="cpu", weights_only=False)
     cfg = OmegaConf.create(ckpt["config"])
 
-    rwkv_path = cfg.model.rwkv_local_path
+    rwkv_path = rwkv_path or cfg.model.rwkv_local_path
     rwkv = AutoModelForCausalLM.from_pretrained(
         rwkv_path, trust_remote_code=True, torch_dtype=dtype, local_files_only=True
     ).to(device).eval()
