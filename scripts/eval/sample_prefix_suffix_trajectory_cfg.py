@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sys
 from pathlib import Path
 from typing import Any, cast
@@ -229,6 +230,16 @@ def apply_generated_state(model, cache, predicted_states, blend):
     return model.inject_into_cache(cache, predicted_states)
 
 
+def decode_generated_text(tokenizer, token_ids):
+    """Decode generated ids without exposing tokenizer control tokens."""
+    text = tokenizer.decode(token_ids, skip_special_tokens=True)
+    for special in getattr(tokenizer, "all_special_tokens", ()):  # defensive for custom tokenizers
+        text = text.replace(special, " ")
+    text = text.replace("<|rwkv_tokenizer_end_of_text|>", " ")
+    text = text.replace("\ufffd", " ")
+    return re.sub(r"[ \t]{2,}", " ", text).strip()
+
+
 @torch.no_grad()
 def generate(model, tokenizer, input_ids, attention_mask, prefix_cache, prefix_logits, z_traj, args):
     chunk_size = int(model.trajectory_chunk_size)
@@ -283,7 +294,7 @@ def generate(model, tokenizer, input_ids, attention_mask, prefix_cache, prefix_l
 
     if s1_mode not in ("transformer", "rwkv", "birwkv") and z_traj.shape[1] > 0:
         state_norm /= float(z_traj.shape[1])
-    return tokenizer.decode(generated), state_norm
+    return decode_generated_text(tokenizer, generated), state_norm
 
 
 def main():
