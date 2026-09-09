@@ -35,6 +35,7 @@ from scripts.eval.run_cola_dlm_tasks_prefix_suffix_trajectory_cfg import (  # no
     recompute_logits_from_injected_cache, sample_next_token,
 )
 from scripts.eval.relay_utils import load_relay_model  # noqa: E402
+from models.state_hijacking_dit import _cache_layer_state  # noqa: E402
 
 # Hidden-Profile fusion (NOT multi-hop reasoning). Each item defines M independent
 # attribute facts distributed one-per-agent. The question asks for ONE specific
@@ -123,7 +124,8 @@ def capture_final_state(model, ids):
     cache = out.past_key_values
     states = []
     for l in range(model.num_layers):
-        st = cache.layers[l].state.get("recurrent_state") if cache.layers[l].state is not None else None
+        layer_state = _cache_layer_state(cache, l)
+        st = layer_state.get("recurrent_state") if layer_state is not None else None
         states.append(st.float().clone() if isinstance(st, torch.Tensor) else None)
     return states
 
@@ -213,7 +215,8 @@ def seq_carryover_state(model, tokenizer, facts, device):
         past = model.rwkv_model(**kwargs).past_key_values
     states = []
     for l in range(model.num_layers):
-        st = past.layers[l].state.get("recurrent_state") if past.layers[l].state is not None else None
+        layer_state = _cache_layer_state(past, l)
+        st = layer_state.get("recurrent_state") if layer_state is not None else None
         states.append(st.float().clone() if isinstance(st, torch.Tensor) else None)
     return states
 

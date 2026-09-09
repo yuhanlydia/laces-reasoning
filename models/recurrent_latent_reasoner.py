@@ -8,7 +8,7 @@ keeps the magnitude of an intervention independent of the chosen reasoning budge
 from __future__ import annotations
 
 from dataclasses import dataclass
-from math import sqrt
+from math import log, sqrt
 from typing import Sequence
 
 import torch
@@ -16,6 +16,57 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 StateList = list[torch.Tensor]
+
+
+def recurrent_state_summary(
+    states: Sequence[torch.Tensor], *, pool_size: int | None = None
+) -> torch.Tensor:
+    """Compact differentiable readout used to feed written state back into z.
+
+    With ``pool_size=None`` the function returns four scalar statistics per layer for
+    backwards-compatible diagnostics.  The recurrent reasoner uses a small spatial
+    grid per head instead, which preserves associative structure rather than only the
+    magnitude of the memory.
+    """
+    if not states:
+        raise ValueError("states must contain at least one layer")
+    summaries = []
+    batch_size = None
+    device = states[0].device
+    dtype = states[0].dtype if states[0].is_floating_point() else torch.float32
+    for layer_index, state in enumerate(states):
+        if state is None:
+            if batch_size is None:
+                raise ValueError("the first recurrent state cannot be None")
+            summaries.append(torch.zeros(batch_size, 4, device=device, dtype=dtype))
+            continue
+        if not isinstance(state, torch.Tensor) or state.ndim < 2:
+            raise ValueError(f"state at layer {layer_index} must be a batched tensor")
+        if batch_size is None:
+            batch_size = int(state.shape[0])
+        elif int(state.shape[0]) != batch_size:
+            raise ValueError("all recurrent states must have the same batch size")
+        if pool_size is not None:
+            if pool_size <= 0 or state.ndim != 4 or state.shape[-1] != state.shape[-2]:
+                raise ValueError(
+                    "pooled recurrent states must have shape [B,H,D,D] and positive pool_size"
+                )
+            pooled = F.adaptive_avg_pool2d(
+                state.float().reshape(-1, 1, state.shape[-2], state.shape[-1]),
+                (pool_size, pool_size),
+            )
+            summaries.append(pooled.reshape(state.shape[0], -1))
+        else:
+            flat = state.float().reshape(state.shape[0], -1)
+            summaries.append(torch.stack((
+                flat.mean(dim=-1),
+                flat.std(dim=-1, unbiased=False),
+                flat.abs().mean(dim=-1),
+                flat.square().mean(dim=-1).sqrt(),
+            ), dim=-1))
+    if batch_size is None:
+        raise ValueError("states must contain at least one tensor")
+    return torch.cat(summaries, dim=-1).to(dtype=dtype)
 
 
 @dataclass
@@ -71,11 +122,12 @@ class SharedDynamicStateWriter(nn.Module):
         # therefore per-head without introducing L*H independent projection matrices.
         self.uv_head = nn.Linear(hidden_dim, 2 * self.head_dim * self.rank)
         self.gain_head = nn.Linear(hidden_dim, 1)
-        self.log_global_scale = nn.Parameter(torch.zeros(()))
+        self.log_global_scale = nn.Parameter(torch.tensor(log(32.0)))
 
         nn.init.normal_(self.layer_embedding.weight, std=0.02)
         nn.init.normal_(self.head_embedding.weight, std=0.02)
-        nn.init.constant_(self.gain_head.bias, -2.0)
+        # Match the O(1e-2..1e-1) scale of observed RWKV state corrections at start-up.
+        nn.init.constant_(self.gain_head.bias, -1.0)
 
         layer_ids = torch.arange(self.num_layers).view(self.num_layers, 1)
         head_ids = torch.arange(self.num_heads).view(1, self.num_heads)
@@ -122,10 +174,10 @@ class SharedDynamicStateWriter(nn.Module):
 class RecurrentReasoner(nn.Module):
     """Query-conditioned recurrent computation in a compact latent space.
 
-    Unlike the previous one-shot compressor, every step forms a new attention query from
-    the current latent and the question representation, then re-reads the fact tokens.
-    Parameters are shared across all steps, so a single checkpoint can run with different
-    inference-time budgets.
+    Every step forms a new attention query from the current latent and the question
+    representation, re-reads the fact tokens, and reads back a compact summary of the
+    state written at the previous step. Parameters are shared across all steps, so a
+    single checkpoint can run with different inference-time budgets.
     """
 
     def __init__(
@@ -140,6 +192,8 @@ class RecurrentReasoner(nn.Module):
         writer_rank: int = 32,
         writer_hidden: int = 128,
         attention_heads: int = 4,
+        state_summary_dim: int | None = None,
+        state_pool_size: int = 4,
     ) -> None:
         super().__init__()
         if context_dim % attention_heads != 0:
@@ -147,11 +201,16 @@ class RecurrentReasoner(nn.Module):
         self.hidden_dim = int(hidden_dim)
         self.z_dim = int(z_dim)
         self.context_dim = int(context_dim)
+        self.state_pool_size = int(state_pool_size)
+        self.state_summary_dim = int(
+            state_summary_dim or (num_layers * num_heads * self.state_pool_size**2)
+        )
 
         self.fact_projection = nn.Linear(hidden_dim, context_dim)
         self.query_projection = nn.Linear(hidden_dim, context_dim)
         self.initial_attention_query = nn.Linear(context_dim, context_dim)
-        self.step_attention_query = nn.Linear(z_dim + context_dim, context_dim)
+        self.state_feedback_projection = nn.Linear(self.state_summary_dim, context_dim)
+        self.step_attention_query = nn.Linear(z_dim + 2 * context_dim, context_dim)
         self.cross_attention = nn.MultiheadAttention(
             context_dim, num_heads=attention_heads, batch_first=True
         )
@@ -161,7 +220,7 @@ class RecurrentReasoner(nn.Module):
             nn.Linear(context_dim, z_dim),
         )
         self.step_input = nn.Sequential(
-            nn.Linear(2 * context_dim, context_dim),
+            nn.Linear(3 * context_dim, context_dim),
             nn.GELU(),
         )
         self.step_cell = nn.GRUCell(context_dim, z_dim)
@@ -189,6 +248,7 @@ class RecurrentReasoner(nn.Module):
         query_tokens: torch.Tensor,
         *,
         steps: int,
+        base_states: Sequence[torch.Tensor] | None = None,
     ) -> ReasoningTrace:
         if steps < 0:
             raise ValueError("steps must be non-negative")
@@ -201,6 +261,24 @@ class RecurrentReasoner(nn.Module):
         query_features = self.query_projection(query)
         query_summary = query_features.mean(dim=1)
 
+        if base_states is None:
+            state_feedback = torch.zeros(
+                facts.shape[0], self.context_dim,
+                device=facts.device, dtype=facts.dtype,
+            )
+        else:
+            base_states = [state.detach().to(device=facts.device) for state in base_states]
+            base_summary = recurrent_state_summary(
+                base_states, pool_size=self.state_pool_size
+            ).to(dtype=facts.dtype)
+            if base_summary.shape[-1] != self.state_summary_dim:
+                raise ValueError(
+                    f"expected state summary width {self.state_summary_dim}, "
+                    f"got {base_summary.shape[-1]}"
+                )
+            state_feedback = self.state_feedback_projection(base_summary)
+        query_summary = query_summary + state_feedback
+
         initial_query = self.initial_attention_query(query_summary).unsqueeze(1)
         initial_context, _ = self.cross_attention(
             initial_query, fact_features, fact_features, need_weights=False
@@ -212,10 +290,20 @@ class RecurrentReasoner(nn.Module):
         contexts: list[torch.Tensor] = []
         attention_weights: list[torch.Tensor] = []
         cumulative_states = [self.writer(z)]
+        if base_states is not None:
+            state_feedback = self.state_feedback_projection(
+                recurrent_state_summary(
+                    [
+                        base + correction
+                        for base, correction in zip(base_states, cumulative_states[0])
+                    ],
+                    pool_size=self.state_pool_size,
+                ).to(dtype=facts.dtype)
+            )
 
         for _ in range(steps):
             attention_query = self.step_attention_query(
-                torch.cat([z, query_summary], dim=-1)
+                torch.cat([z, query_summary, state_feedback], dim=-1)
             ).unsqueeze(1)
             context, weights = self.cross_attention(
                 attention_query,
@@ -225,13 +313,25 @@ class RecurrentReasoner(nn.Module):
                 average_attn_weights=False,
             )
             context = context[:, 0]
-            cell_input = self.step_input(torch.cat([context, query_summary], dim=-1))
+            cell_input = self.step_input(
+                torch.cat([context, query_summary, state_feedback], dim=-1)
+            )
             z = self.latent_norm(self.step_cell(cell_input, z))
 
             contexts.append(context)
             attention_weights.append(weights)
             latents.append(z)
             cumulative_states.append(self.writer(z))
+            if base_states is not None:
+                state_feedback = self.state_feedback_projection(
+                    recurrent_state_summary(
+                        [
+                            base + correction
+                            for base, correction in zip(base_states, cumulative_states[-1])
+                        ],
+                        pool_size=self.state_pool_size,
+                    ).to(dtype=facts.dtype)
+                )
 
         return ReasoningTrace(
             latents=latents,

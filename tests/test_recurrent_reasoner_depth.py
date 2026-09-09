@@ -7,6 +7,7 @@ import torch
 from models.recurrent_latent_reasoner import (
     RecurrentReasoner,
     cumulative_state_targets,
+    recurrent_state_summary,
     normalize_depths,
     select_converged_depth,
     select_default_budget,
@@ -45,6 +46,33 @@ def test_reasoner_requeries_evidence_and_returns_every_budget_depth():
     assert trace.cumulative_states[-1][0].shape == (1, 2, 3, 3)
     # Per-step evidence is queried from the current latent, not compressed once and reused.
     assert not torch.allclose(trace.contexts[0], trace.contexts[1])
+
+
+def test_reasoner_reads_back_written_state_between_steps():
+    torch.manual_seed(17)
+    model = RecurrentReasoner(
+        hidden_dim=8,
+        num_layers=2,
+        num_heads=1,
+        head_dim=2,
+        z_dim=4,
+        context_dim=8,
+        writer_rank=2,
+        writer_hidden=16,
+    )
+    facts = torch.randn(1, 5, 8)
+    query = torch.randn(1, 3, 8)
+    base = _state(0.0, layers=2, heads=1, dim=2)
+    altered = _state(3.0, layers=2, heads=1, dim=2)
+
+    plain = model(facts, query, steps=3)
+    closed_a = model(facts, query, steps=3, base_states=base)
+    closed_b = model(facts, query, steps=3, base_states=altered)
+
+    assert recurrent_state_summary(base).shape == (1, 8)
+    assert model.state_summary_dim == 2 * 1 * 4**2
+    assert not torch.allclose(closed_a.latents[1], closed_b.latents[1])
+    assert not torch.allclose(closed_a.latents[2], plain.latents[2])
 
 
 def test_same_facts_with_different_queries_change_the_reasoning_trace():

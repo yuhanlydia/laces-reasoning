@@ -55,7 +55,7 @@ from scripts.eval.run_cola_dlm_tasks_prefix_suffix_trajectory_cfg import sample_
 
 CKPT = str(
     REPO
-    / "outputs_relay/traj32x16-2.9B-singlez-bridge-v2-s2-birwkv-joint-scratch/step_00026000"
+    / "outputs_dynamic_basis/laces-2.9B-dynlowrank-r32-s0frozen-joint-b4-50k-fla03/step_00030000"
 )
 
 
@@ -196,6 +196,7 @@ def _build_dataset(model, tokenizer, tasks, device):
                 "H_facts": H_facts,
                 "H_query": H_query,
                 "C_star": [_to_cpu_half(target) for target in C_star],
+                "context_state": _to_cpu_half(context_state),
                 "hop_count": len(facts),
                 "query_prefix_ids": query_prefix_ids,
                 "query_last_id": query_last_id,
@@ -240,6 +241,7 @@ def _train_reasoner(reasoner, train_data, args, device):
                 record["H_facts"].to(device=device, dtype=torch.float32),
                 record["H_query"].to(device=device, dtype=torch.float32),
                 steps=args.train_max_steps,
+                base_states=_to_device_float(record["context_state"], device),
             )
             targets = [
                 _to_device_float(target, device)
@@ -335,6 +337,7 @@ def _evaluate(reasoner, model, tokenizer, test_tasks, test_data, args, device):
             record["H_facts"].to(device=device, dtype=torch.float32),
             record["H_query"].to(device=device, dtype=torch.float32),
             steps=max_trace_steps,
+            base_states=_to_device_float(record["context_state"], device),
         )
         depths = _evaluation_depths(args, record["hop_count"])
         depths = normalize_depths(depths, max_steps=max_trace_steps)
@@ -509,6 +512,10 @@ def run(args):
                 "context_dim": args.context_dim,
                 "writer_rank": args.r_s,
                 "writer_hidden": args.writer_hidden,
+                "state_summary_dim": (
+                    int(model.num_layers) * int(model.num_heads) * 4**2
+                ),
+                "state_pool_size": 4,
             },
             "training_args": vars(args),
         },
