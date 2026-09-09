@@ -6,6 +6,7 @@ from models.multichoice_reasoning import (
     format_multiple_choice_prompt,
     load_feature_record,
     recurrent_multichoice_objective,
+    retarget_cosine_schedule,
     save_feature_record,
     stratified_three_way_split,
 )
@@ -97,3 +98,13 @@ def test_recurrent_objective_backpropagates_through_writer_correction():
     assert correction.grad is not None
     assert torch.isfinite(correction.grad).all()
     assert metrics["supervised_depths"] == 1
+
+
+def test_resume_retargets_cosine_schedule_to_new_total_step_budget():
+    parameter = torch.nn.Parameter(torch.zeros(()))
+    optimizer = torch.optim.AdamW([parameter], lr=3e-4)
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=50_000)
+
+    retarget_cosine_schedule(scheduler, total_steps=500_000, grad_accum=4)
+
+    assert scheduler.T_max == 125_000

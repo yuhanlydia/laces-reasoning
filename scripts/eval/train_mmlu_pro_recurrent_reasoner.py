@@ -20,6 +20,7 @@ from models.multichoice_reasoning import (
     MultipleChoiceResidualHead,
     load_feature_record,
     recurrent_multichoice_objective,
+    retarget_cosine_schedule,
 )
 from models.recurrent_latent_reasoner import RecurrentReasoner
 
@@ -158,6 +159,9 @@ def main(argv=None):
         random.setstate(payload["python_rng"]); torch.set_rng_state(payload["torch_rng"].cpu())
         if payload.get("cuda_rng") is not None:
             torch.cuda.set_rng_state_all([value.cpu() for value in payload["cuda_rng"]])
+        retarget_cosine_schedule(
+            scheduler, total_steps=args.max_steps, grad_accum=args.grad_accum
+        )
     args.output_dir.mkdir(parents=True, exist_ok=True)
     history = args.output_dir / "history.jsonl"
     order = train_paths[:]; random.shuffle(order); position = 0

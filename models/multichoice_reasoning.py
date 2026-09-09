@@ -16,6 +16,12 @@ from models.recurrent_latent_reasoner import ReasoningTrace
 SCHEMA_VERSION = 1
 
 
+def retarget_cosine_schedule(scheduler, *, total_steps: int, grad_accum: int) -> None:
+    if total_steps <= 0 or grad_accum <= 0:
+        raise ValueError("total_steps and grad_accum must be positive")
+    scheduler.T_max = max(1, int(total_steps) // int(grad_accum))
+
+
 def format_multiple_choice_prompt(
     question: str, options: Sequence[str], *, category: str | None = None,
 ) -> tuple[str, str]:

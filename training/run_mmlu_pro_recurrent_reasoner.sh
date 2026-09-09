@@ -16,5 +16,5 @@ PYTHONPATH=. python3 scripts/preprocess/cache_mmlu_pro_rwkv_features.py \
 
 PYTHONPATH=. python3 scripts/eval/train_mmlu_pro_recurrent_reasoner.py \
   --feature_root "$FEATURE_ROOT" --output_dir "$OUTPUT_DIR" --device "$DEVICE" \
-  --max_steps 200000 --max_hours 6 --eval_every 5000 --save_every 10000 \
+  --max_steps 500000 --max_hours 6 --eval_every 5000 --save_every 10000 \
   --grad_accum 4 --depths 1 2 4 8 16 --writer_rank 32 --base_logit_scale 0.25
