@@ -16,7 +16,7 @@ from models.state_hijacking_dit import cosine_alpha_bar
 from scripts.eval.relay_utils import load_relay_model
 
 
-def parse_args():
+def parse_args(argv=None):
     p = argparse.ArgumentParser()
     p.add_argument("--ckpt_dir", required=True)
     p.add_argument("--prompt", required=True)
@@ -32,10 +32,11 @@ def parse_args():
     p.add_argument("--trajectory_s1_mode", choices=("independent", "transformer", "rwkv", "birwkv"), default=None)
     p.add_argument("--trajectory_state_blend", type=float, default=None)
     p.add_argument("--trajectory_sampler", choices=("rf_heun",), default=None)
+    p.add_argument("--diffusion_sampler", choices=("ddpm", "ddim"), default="ddpm")
     p.add_argument("--cond_boundary_scale", type=float, default=1.0,
                    help="Scale boundary-token conditioning (condboundary checkpoints only; 1.0=trained behavior)")
     p.add_argument("--seed", type=int, default=42)
-    return p.parse_args()
+    return p.parse_args(argv)
 
 
 def apply_repetition_penalty(logits, generated_ids, penalty):
@@ -97,6 +98,44 @@ def sample_trajectory_ddim_cfg(model, cond, steps, cfg_scale, device, dtype):
             eps = eps_uncond + cfg_scale * (eps_cond - eps_uncond)
         z0_pred = (z - (1 - ab_cur).sqrt() * eps) / ab_cur.sqrt()
         z = ab_nxt.sqrt() * z0_pred + (1 - ab_nxt).sqrt() * eps
+    return z
+
+
+@torch.no_grad()
+def sample_trajectory_ddpm_cfg(model, cond, steps, cfg_scale, device, dtype):
+    """Conditional DDPM sampling with classifier-free guidance."""
+    if cond.dim() > 2:
+        cond = cond.reshape(-1, cond.shape[-1])
+    horizon = int(model.trajectory_horizon)
+    z = torch.randn(cond.shape[0], horizon, model.latent_dim, device=device, dtype=dtype)
+    ts = torch.linspace(1.0, 0.0, steps + 1, device=device, dtype=dtype)
+    uncond = torch.zeros_like(cond)
+    for i in range(steps):
+        t_cur, t_nxt = ts[i], ts[i + 1]
+        ab_cur = cosine_alpha_bar(t_cur.unsqueeze(0)).to(dtype).clamp(min=1e-4, max=1.0)
+        ab_nxt = cosine_alpha_bar(t_nxt.unsqueeze(0)).to(dtype).clamp(min=1e-4, max=1.0)
+        t_batch = t_cur.expand(cond.shape[0])
+        eps_cond = model.trajectory_dit(z, t_batch, cond=cond)
+        if cfg_scale == 1.0:
+            eps_pred = eps_cond
+        else:
+            eps_uncond = model.trajectory_dit(z, t_batch, cond=uncond)
+            eps_pred = eps_uncond + cfg_scale * (eps_cond - eps_uncond)
+
+        alpha_cur = (ab_cur / ab_nxt).clamp(min=1e-4, max=1.0) if i < steps - 1 else ab_cur
+        one_minus_ab_cur = (1.0 - ab_cur).clamp(min=1e-4)
+        mu = (1.0 / alpha_cur.sqrt()) * (
+            z - (1.0 - alpha_cur) / one_minus_ab_cur.sqrt() * eps_pred
+        )
+        if i < steps - 1:
+            sigma_sq = (
+                (1.0 - alpha_cur)
+                * (1.0 - ab_nxt).clamp(min=1e-4)
+                / one_minus_ab_cur
+            ).clamp(min=0.0)
+            z = mu + sigma_sq.sqrt() * torch.randn_like(z)
+        else:
+            z = mu
     return z
 
 
@@ -170,7 +209,7 @@ def sample_trajectory_rf_heun_cfg(model, cond, steps, cfg_scale, device, dtype):
 
 
 @torch.no_grad()
-def sample_trajectory_cfg(model, cond, steps, cfg_scale, device, dtype):
+def sample_trajectory_cfg(model, cond, steps, cfg_scale, device, dtype, diffusion_sampler="ddpm"):
     gen_type = str(getattr(model, "_gen_type", "ddpm"))
     if gen_type == "flow":
         return sample_trajectory_flow_cfg(model, cond, steps, cfg_scale, device, dtype)
@@ -178,7 +217,16 @@ def sample_trajectory_cfg(model, cond, steps, cfg_scale, device, dtype):
         if getattr(model, "_trajectory_sampler", None) == "rf_heun":
             return sample_trajectory_rf_heun_cfg(model, cond, steps, cfg_scale, device, dtype)
         return sample_trajectory_rf_cfg(model, cond, steps, cfg_scale, device, dtype)
-    return sample_trajectory_ddim_cfg(model, cond, steps, cfg_scale, device, dtype)
+    if diffusion_sampler == "ddim":
+        return sample_trajectory_ddim_cfg(model, cond, steps, cfg_scale, device, dtype)
+    return sample_trajectory_ddpm_cfg(model, cond, steps, cfg_scale, device, dtype)
+
+
+def apply_generated_state(model, cache, predicted_states, blend):
+    """Apply the same partial state blend during generation as during training."""
+    if float(blend) < 1.0:
+        return model.blend_into_cache(cache, predicted_states, float(blend))
+    return model.inject_into_cache(cache, predicted_states)
 
 
 @torch.no_grad()
@@ -196,7 +244,7 @@ def generate(model, tokenizer, input_ids, attention_mask, prefix_cache, prefix_l
         blend = float(model.config.get("trajectory_state_blend", getattr(model, "trajectory_state_blend", 1.0)))
     else:
         layer_states = None
-        blend = 1.0
+        blend = float(model.config.get("trajectory_state_blend", getattr(model, "trajectory_state_blend", 1.0)))
 
     for h in range(z_traj.shape[1]):
         if len(generated) - input_ids.shape[1] >= args.max_new_tokens:
@@ -207,7 +255,7 @@ def generate(model, tokenizer, input_ids, attention_mask, prefix_cache, prefix_l
         else:
             states_h = model.predict_states(z_traj[:, h])
             state_norm += float(torch.stack([s.float().norm() for s in states_h]).mean().item())
-            past_kv = model.inject_into_cache(past_kv, states_h)
+            past_kv = apply_generated_state(model, past_kv, states_h, blend)
         for _ in range(chunk_size):
             if len(generated) - input_ids.shape[1] >= args.max_new_tokens:
                 break
@@ -262,7 +310,10 @@ def main():
     input_ids = tokenizer_any(args.prompt, return_tensors="pt").input_ids.to(args.device)
     attention_mask = torch.ones_like(input_ids)
     z_prefix, prefix_cache, prefix_logits = encode_prefix(model_any, input_ids, attention_mask)
-    z_traj = sample_trajectory_cfg(model_any, z_prefix, args.steps, args.cfg_scale, args.device, dtype)
+    z_traj = sample_trajectory_cfg(
+        model_any, z_prefix, args.steps, args.cfg_scale, args.device, dtype,
+        diffusion_sampler=args.diffusion_sampler,
+    )
     text, state_norm = generate(
         model_any, tokenizer_any, input_ids, attention_mask, prefix_cache, prefix_logits, z_traj, args
     )
@@ -280,6 +331,7 @@ def main():
         "top_p": args.top_p,
         "repetition_penalty": args.repetition_penalty,
         "trajectory_sampler": args.trajectory_sampler,
+        "diffusion_sampler": args.diffusion_sampler,
         "trajectory_s1_mode": str(model_any.config.get("trajectory_s1_mode", "independent")),
         "trajectory_state_blend": float(model_any.config.get("trajectory_state_blend", 1.0)),
         "trajectory_horizon": int(model_any.trajectory_horizon),
