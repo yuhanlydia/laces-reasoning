@@ -69,9 +69,9 @@ def restore_checkpoint(checkpoint, *, reasoner, decoder, optimizer, scheduler, s
     scheduler.load_state_dict(checkpoint["scheduler"])
     scaler.load_state_dict(checkpoint["scaler"])
     random.setstate(checkpoint["rng"]["python"])
-    torch.set_rng_state(checkpoint["rng"]["torch"])
+    torch.set_rng_state(checkpoint["rng"]["torch"].cpu())
     if "cuda" in checkpoint["rng"] and torch.cuda.is_available():
-        torch.cuda.set_rng_state_all(checkpoint["rng"]["cuda"])
+        torch.cuda.set_rng_state_all([state.cpu() for state in checkpoint["rng"]["cuda"]])
     return {
         "step": int(checkpoint["step"]),
         "epoch": int(checkpoint["epoch"]),
