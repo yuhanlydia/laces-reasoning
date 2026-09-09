@@ -5,6 +5,7 @@ __pycache__/
 *.ckpt
 *.safetensors
 outputs*/
+.worktrees/
 preprocessed_data/
 checkpoints/
 hf_release/
