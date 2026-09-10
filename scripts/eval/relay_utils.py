@@ -12,7 +12,6 @@ from typing import Tuple, Optional
 
 import torch
 from omegaconf import OmegaConf
-from transformers import AutoModelForCausalLM, AutoTokenizer
 
 
 def get_repo_root() -> str:
@@ -33,17 +32,21 @@ def ensure_repo_in_path():
 def load_relay_model(
     ckpt_dir: str,
     device: str = "cuda",
+    *,
+    rwkv_path_override: Optional[str] = None,
 ) -> Tuple[torch.nn.Module, torch.nn.Module, object, dict, object]:
     """Load StateInjectionDiTRELAY from checkpoint.
 
     Args:
         ckpt_dir: Path to checkpoint directory containing model.pt
         device: Device to load model on
+        rwkv_path_override: Explicit local backbone/tokenizer directory (does not rewrite checkpoint)
 
     Returns:
         (model, rwkv, tokenizer, ckpt, cfg)
     """
     ensure_repo_in_path()
+    from transformers import AutoModelForCausalLM, AutoTokenizer
     from models.state_hijacking_dit import StateInjectionDiTRELAY
 
     dtype = torch.bfloat16
@@ -51,7 +54,8 @@ def load_relay_model(
     ckpt = torch.load(ckpt_path, map_location="cpu", weights_only=False)
     cfg = OmegaConf.create(ckpt["config"])
 
-    rwkv_path = cfg.model.rwkv_local_path
+    rwkv_path = rwkv_path_override or cfg.model.rwkv_local_path
+    cfg.model.rwkv_local_path = rwkv_path
     rwkv = AutoModelForCausalLM.from_pretrained(
         rwkv_path, trust_remote_code=True, torch_dtype=dtype, local_files_only=True
     ).to(device).eval()
