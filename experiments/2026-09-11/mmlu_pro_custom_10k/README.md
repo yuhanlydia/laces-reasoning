@@ -29,3 +29,7 @@ The detached coordinator was launched on 2026-09-11 from `run_10k.py`; it record
 - Checkpoints `latest.pt` and `best_dev.pt` in each result directory.
 
 This record documents the split and launch, not completion or model improvement. A machine/container shutdown will interrupt these local processes; saved checkpoints support the trainer's explicit resume mechanism. No weights or raw dataset rows are committed.
+
+## Progress snapshot
+
+See `progress/snapshot.json` for the UTC capture time and exact counts, and per-route `metrics.jsonl` for recorded training metrics. At this snapshot, distillation completed 1,500 steps and direct GRPO 480; the chained route is queued. Distillation development accuracy was 12.27% at step 500 and 11.34% at step 1,000 (538 examples), below matched parent LACES 14.31% and raw RWKV 23.23%. Step 1,500 development evaluation was not yet available. Direct GRPO had not reached its first development evaluation. These preliminary results show no distillation improvement; all authorized training jobs remain scheduled.

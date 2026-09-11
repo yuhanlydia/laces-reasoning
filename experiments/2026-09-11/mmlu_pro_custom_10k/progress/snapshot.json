@@ -1,0 +1,100 @@
+{
+  "captured_at_utc": "2026-09-11T06:38:47.062530+00:00",
+  "training_source_commit": "34ce3f317c41c19ba3d4308cb892b197b5e2cfe0",
+  "status": {
+    "runs": {},
+    "active": {
+      "distill": {
+        "pid": 49254,
+        "output_dir": "results/mmlu_pro/custom_10k_distill_s42"
+      },
+      "grpo_direct": {
+        "pid": 49255,
+        "output_dir": "results/mmlu_pro/custom_10k_grpo_direct_s42"
+      }
+    },
+    "queued": [
+      "distill_grpo"
+    ],
+    "peak_gpu_memory_mib": 23017
+  },
+  "runs": {
+    "distill": {
+      "completed_steps": 1500,
+      "latest_metric": {
+        "distill_loss": 1.117553973257197,
+        "grad_norm": 2.302150249481201,
+        "effective_candidates": 1.994269847869873,
+        "reward_mean": -4.753693580627441,
+        "reward_std": 1.3752632141113281,
+        "group_accuracy": 0.0,
+        "step": 1500,
+        "seconds": 4.6437943344935775,
+        "objective": "distill",
+        "question_hash": "4ac4d5e81bbdde6b826189f47f1fa12877c2ba1f6e15720ae196d33cc363d52b"
+      },
+      "development": {
+        "dev_step_000500": {
+          "current": {
+            "n": 538,
+            "accuracy": 0.12267657992565056,
+            "ensemble_accuracy": 0.12267657992565056,
+            "macro_accuracy": 0.12336254465734954
+          },
+          "raw_rwkv": {
+            "n": 538,
+            "accuracy": 0.23234200743494424,
+            "ensemble_accuracy": 0.23234200743494424,
+            "macro_accuracy": 0.25672045037398583
+          },
+          "parent_matched": {
+            "n": 538,
+            "accuracy": 0.14312267657992564,
+            "ensemble_accuracy": 0.14312267657992564,
+            "macro_accuracy": 0.15444196130457016
+          }
+        },
+        "dev_step_001000": {
+          "current": {
+            "n": 538,
+            "accuracy": 0.11338289962825279,
+            "ensemble_accuracy": 0.11338289962825279,
+            "macro_accuracy": 0.1151344340137582
+          },
+          "raw_rwkv": {
+            "n": 538,
+            "accuracy": 0.23234200743494424,
+            "ensemble_accuracy": 0.23234200743494424,
+            "macro_accuracy": 0.25672045037398583
+          },
+          "parent_matched": {
+            "n": 538,
+            "accuracy": 0.14312267657992564,
+            "ensemble_accuracy": 0.14312267657992564,
+            "macro_accuracy": 0.15444196130457016
+          }
+        }
+      }
+    },
+    "grpo_direct": {
+      "completed_steps": 480,
+      "latest_metric": {
+        "skipped_flat": false,
+        "grad_norm": 185.84780883789062,
+        "pg_loss": -1.3105571269989014e-05,
+        "reference_kl": 0.006507406674927552,
+        "clip_fraction": 0.0,
+        "updates": 1,
+        "reward_mean": -2.480442523956299,
+        "reward_std": 0.013645383529365063,
+        "group_accuracy": 0.0,
+        "step": 480,
+        "seconds": 21.46923978626728,
+        "objective": "grpo",
+        "question_hash": "85d228a60780ac41226eff41d24443b8964acba9bbfaaa0da9fcba154485994c"
+      },
+      "development": {}
+    }
+  },
+  "note": "Live snapshot, not completion. Metrics use different randomly sampled training questions; development evaluates the fixed custom split. Final test remains unevaluated."
+}
