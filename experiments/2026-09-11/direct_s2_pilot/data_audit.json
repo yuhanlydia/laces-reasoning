@@ -1,0 +1,18 @@
+{
+  "revision": "b189ec765aa7ed75c8acfea42df31fdae71f97be",
+  "splits": {
+    "validation": {
+      "rows": 70,
+      "unique_questions": 70,
+      "duplicate_groups": 0,
+      "duplicate_extra_rows": 0
+    },
+    "test": {
+      "rows": 12032,
+      "unique_questions": 11874,
+      "duplicate_groups": 158,
+      "duplicate_extra_rows": 158
+    }
+  },
+  "validation_test_overlap": 0
+}

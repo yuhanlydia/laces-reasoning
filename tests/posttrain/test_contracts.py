@@ -48,6 +48,27 @@ def test_test_questions_cannot_enter_external_train(tmp_path):
         d.prepare_bundle([row(i) for i in range(5)],[row(88)],tmp_path,external_train=external,source_id='local-v1')
 
 
+def test_official_test_duplicates_preserve_all_rows_and_report_counts(tmp_path):
+    d=module('data')
+    duplicate=dict(row(100),question_id=101)
+    manifest=d.prepare_bundle([row(i) for i in range(5)],
+        [row(100),duplicate,row(102)],tmp_path)
+    assert manifest['counts']=={'train':4,'dev':1,'test':3}
+    assert manifest['test_unique_questions']==2
+    assert manifest['test_duplicate_rows']==1
+    sealed,_=d.read_evaluation_bundle(tmp_path,'test',acknowledge_test=True)
+    assert [x['question_id'] for x in sealed]==['100','101','102']
+    assert all('teacher_text' not in x for x in sealed)
+
+
+def test_duplicate_official_test_still_blocks_training_overlap(tmp_path):
+    d=module('data')
+    with pytest.raises(ValueError,match='overlap'):
+        d.prepare_bundle([row(i) for i in range(5)],
+            [row(88),dict(row(88),question_id=89)],tmp_path,
+            external_train=[row(88)],source_id='independent-train')
+
+
 def test_manifest_tamper_is_rejected(tmp_path):
     d=module('data')
     d.prepare_bundle([row(i) for i in range(5)],[row(50)],tmp_path)

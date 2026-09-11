@@ -1,0 +1,32 @@
+{
+  "schema": "laces_mmlu_pro_v1",
+  "protocol": "mmlu_pro_validation_adaptation_v1",
+  "seed": 42,
+  "dataset": "TIGER-Lab/MMLU-Pro",
+  "revision": "b189ec765aa7ed75c8acfea42df31fdae71f97be",
+  "source_id": null,
+  "counts": {
+    "train": 56,
+    "dev": 14,
+    "test": 12032
+  },
+  "test_unique_questions": 11874,
+  "test_duplicate_rows": 158,
+  "files": {
+    "train": {
+      "path": "train.jsonl",
+      "sha256": "8dba947b094240e65631b9ed7fed99397ae391e3ee477ee8e9d976259e5d3445"
+    },
+    "dev": {
+      "path": "dev.jsonl",
+      "sha256": "ebca8855256dcda477e539aa1ca437d20ea13293461fcabf77f0ca160e383150"
+    },
+    "test": {
+      "path": "test.jsonl",
+      "sha256": "1c4b12f14cab79c6f95c6bef0941f94b0b80c20458a3385220a1f655eed8fc32"
+    }
+  },
+  "test_policy": "test labels/rationales never used for training, reward, or checkpoint selection",
+  "few_shot": 0,
+  "notes": "Validation-adaptation is not the standard untrained 5-shot protocol; report it explicitly."
+}

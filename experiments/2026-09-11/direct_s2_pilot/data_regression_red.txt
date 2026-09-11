@@ -1,0 +1,49 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+______ test_official_test_duplicates_preserve_all_rows_and_report_counts _______
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-3/test_official_test_duplicates_0')
+
+    def test_official_test_duplicates_preserve_all_rows_and_report_counts(tmp_path):
+        d=module('data')
+        duplicate=dict(row(100),question_id=101)
+>       manifest=d.prepare_bundle([row(i) for i in range(5)],
+            [row(100),duplicate,row(102)],tmp_path)
+
+tests/posttrain/test_contracts.py:54: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+laces_posttrain/data.py:129: in prepare_bundle
+    sets={name:_unique(rows,name) for name,rows in [('train',train),('dev',dev),('test',sealed)]}
+laces_posttrain/data.py:129: in <dictcomp>
+    sets={name:_unique(rows,name) for name,rows in [('train',train),('dev',dev),('test',sealed)]}
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+rows = [{'question_id': '100', 'question': 'Question 100?', 'options': ['Option 100-0', 'Option 100-1', 'Option 100-2', 'Opti... 102-0', 'Option 102-1', 'Option 102-2', 'Option 102-3', 'Option 102-4', 'Option 102-5', ...], 'answer_index': 1, ...}]
+label = 'test'
+
+    def _unique(rows: list[dict], label: str) -> set[str]:
+        keys=[question_key(x) for x in rows]
+>       if len(set(keys))!=len(keys): raise ValueError(f'Duplicate normalized questions in {label}')
+E       ValueError: Duplicate normalized questions in test
+
+laces_posttrain/data.py:102: ValueError
+------------------------------ Captured log setup ------------------------------
+WARNING  fla.utils:utils.py:56 Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+DEBUG    torch.__trace:utils.py:1900 
+DEBUG    torch.__trace:utils.py:1900
+__________ test_duplicate_official_test_still_blocks_training_overlap __________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-3/test_duplicate_official_test_s0')
+
+    def test_duplicate_official_test_still_blocks_training_overlap(tmp_path):
+        d=module('data')
+>       with pytest.raises(ValueError,match='overlap'):
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'overlap'
+E         Actual message: 'Duplicate normalized questions in test'
+
+tests/posttrain/test_contracts.py:66: AssertionError
+=========================== short test summary info ============================
+FAILED tests/posttrain/test_contracts.py::test_official_test_duplicates_preserve_all_rows_and_report_counts
+FAILED tests/posttrain/test_contracts.py::test_duplicate_official_test_still_blocks_training_overlap
+2 failed, 15 deselected in 2.06s

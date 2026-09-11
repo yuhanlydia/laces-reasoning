@@ -87,6 +87,10 @@ of option order. The hash includes the normalized question AND unordered choices
 generic question stems with different choices are different problems. This is an
 exact normalized check, not a guarantee against paraphrases, semantic overlap or
 contamination already in pretrained weights. Source provenance still matters.
+Repeated questions within the official test split are preserved so its row count
+and evaluation weighting stay unchanged. The manifest records `test_unique_questions`
+and `test_duplicate_rows`; cross-split overlap and duplicate train/dev questions
+are still rejected.
 Test rationale fields are removed from the sealed file. File hashes are checked
 on every run. Test bytes may be hashed for integrity, but the training path never
 parses test questions/labels or uses them as rewards. Do not fabricate source IDs

@@ -1,0 +1,23 @@
+{
+  "distill": {
+    "global_step": 2,
+    "s2_tensors": 473,
+    "changed_vs_reference": 473,
+    "max_abs_change": 2.0265579223632812e-06,
+    "all_finite": true
+  },
+  "grpo_direct": {
+    "global_step": 2,
+    "s2_tensors": 473,
+    "changed_vs_reference": 473,
+    "max_abs_change": 2.0265579223632812e-06,
+    "all_finite": true
+  },
+  "distill_grpo": {
+    "global_step": 2,
+    "s2_tensors": 473,
+    "changed_vs_reference": 473,
+    "max_abs_change": 2.0265579223632812e-06,
+    "all_finite": true
+  }
+}

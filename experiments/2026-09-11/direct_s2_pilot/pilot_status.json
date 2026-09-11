@@ -1,0 +1,21 @@
+{
+  "runs": {
+    "distill": {
+      "exit_code": 0,
+      "seconds": 180.9,
+      "output_dir": "results/mmlu_pro/pilot_distill_s42"
+    },
+    "grpo_direct": {
+      "exit_code": 0,
+      "seconds": 211.0,
+      "output_dir": "results/mmlu_pro/pilot_grpo_direct_s42"
+    },
+    "distill_grpo": {
+      "exit_code": 0,
+      "seconds": 135.6,
+      "output_dir": "results/mmlu_pro/pilot_distill_grpo_s42"
+    }
+  },
+  "active": [],
+  "peak_gpu_memory_mib": 22925
+}

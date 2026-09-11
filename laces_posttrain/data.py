@@ -126,7 +126,10 @@ def prepare_bundle(validation: list[dict], test: list[dict], output: Path | str,
         train=[canonicalize(x,source=source_id) for x in external_train]
         dev=val
         protocol='mmlu_pro_external_train_v1'
-    sets={name:_unique(rows,name) for name,rows in [('train',train),('dev',dev),('test',sealed)]}
+    sets={name:_unique(rows,name) for name,rows in [('train',train),('dev',dev)]}
+    # The official test contains repeated questions. Preserve its rows and weighting;
+    # deduplicate identities only for the cross-split contamination check below.
+    sets['test']={question_key(row) for row in sealed}
     if not train or not dev: raise ValueError('Empty train/dev split')
     for a,b in [('train','dev'),('train','test'),('dev','test')]:
         if sets[a]&sets[b]: raise ValueError(f'Question overlap between {a} and {b}; reject permutations and duplicates')
@@ -135,6 +138,7 @@ def prepare_bundle(validation: list[dict], test: list[dict], output: Path | str,
     for name,rows in parts.items(): write_jsonl(output/f'{name}.jsonl',rows)
     manifest=dict(schema=SCHEMA,protocol=protocol,seed=seed,dataset='TIGER-Lab/MMLU-Pro',revision=revision,
         source_id=source_id,counts={name:len(rows) for name,rows in parts.items()},
+        test_unique_questions=len(sets['test']),test_duplicate_rows=len(sealed)-len(sets['test']),
         files={name:dict(path=f'{name}.jsonl',sha256=digest(output/f'{name}.jsonl')) for name in parts},
         test_policy='test labels/rationales never used for training, reward, or checkpoint selection',
         few_shot=0,notes='Validation-adaptation is not the standard untrained 5-shot protocol; report it explicitly.')

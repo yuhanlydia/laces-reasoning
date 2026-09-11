@@ -1,0 +1,266 @@
+{
+  "metrics": {
+    "current": {
+      "n": 2,
+      "accuracy": 0.0,
+      "ensemble_accuracy": 0.0,
+      "macro_accuracy": 0.0,
+      "invalid": 0,
+      "mean_seconds": 1.021113590337336,
+      "categories": {
+        "biology": {
+          "n": 1,
+          "correct": 0,
+          "ensemble_correct": 0,
+          "accuracy": 0.0,
+          "ensemble_accuracy": 0.0
+        },
+        "business": {
+          "n": 1,
+          "correct": 0,
+          "ensemble_correct": 0,
+          "accuracy": 0.0,
+          "ensemble_accuracy": 0.0
+        }
+      }
+    },
+    "raw_rwkv": {
+      "n": 2,
+      "accuracy": 0.0,
+      "ensemble_accuracy": 0.0,
+      "macro_accuracy": 0.0,
+      "invalid": 0,
+      "mean_seconds": 0.1067212363705039,
+      "categories": {
+        "biology": {
+          "n": 1,
+          "correct": 0,
+          "ensemble_correct": 0,
+          "accuracy": 0.0,
+          "ensemble_accuracy": 0.0
+        },
+        "business": {
+          "n": 1,
+          "correct": 0,
+          "ensemble_correct": 0,
+          "accuracy": 0.0,
+          "ensemble_accuracy": 0.0
+        }
+      }
+    },
+    "parent_matched": {
+      "n": 2,
+      "accuracy": 0.0,
+      "ensemble_accuracy": 0.0,
+      "macro_accuracy": 0.0,
+      "invalid": 0,
+      "mean_seconds": 1.035584778059274,
+      "categories": {
+        "biology": {
+          "n": 1,
+          "correct": 0,
+          "ensemble_correct": 0,
+          "accuracy": 0.0,
+          "ensemble_accuracy": 0.0
+        },
+        "business": {
+          "n": 1,
+          "correct": 0,
+          "ensemble_correct": 0,
+          "accuracy": 0.0,
+          "ensemble_accuracy": 0.0
+        }
+      }
+    }
+  },
+  "samples": {
+    "current": [
+      {
+        "question_id": "21",
+        "question_hash": "9627f7ca22c3677a15a47f068b7d1f90f1dbe5f9d8915f8919ac9c38b37e7fea",
+        "category": "biology",
+        "gold": 3,
+        "choice": 0,
+        "ensemble_choice": 0,
+        "correct": false,
+        "ensemble_correct": false,
+        "invalid": false,
+        "candidates": [
+          {
+            "choice": 0,
+            "option_logprobs": [
+              -2.577552080154419,
+              -3.140052080154419,
+              -2.827552080154419,
+              -4.01505184173584,
+              -3.577552080154419,
+              -4.39005184173584,
+              -3.515052080154419,
+              -4.64005184173584,
+              -2.952552080154419,
+              -3.515052080154419
+            ]
+          }
+        ],
+        "encoding_seconds": 0.04209837410598993,
+        "seconds": 1.0183688858523965
+      },
+      {
+        "question_id": "15",
+        "question_hash": "bf29fc24e4dd20424ad4ea513c4b65d3f39062459502beb4a98957dc1ed29a08",
+        "category": "business",
+        "gold": 5,
+        "choice": 1,
+        "ensemble_choice": 1,
+        "correct": false,
+        "ensemble_correct": false,
+        "invalid": false,
+        "candidates": [
+          {
+            "choice": 1,
+            "option_logprobs": [
+              -2.5375423431396484,
+              -2.1625423431396484,
+              -2.8500423431396484,
+              -3.2250423431396484,
+              -3.4125423431396484,
+              -3.8500423431396484,
+              -4.162542343139648,
+              -5.100042343139648,
+              -3.9750423431396484,
+              -3.6625423431396484
+            ]
+          }
+        ],
+        "encoding_seconds": 0.037978945299983025,
+        "seconds": 1.0238582948222756
+      }
+    ],
+    "raw_rwkv": [
+      {
+        "question_id": "21",
+        "question_hash": "9627f7ca22c3677a15a47f068b7d1f90f1dbe5f9d8915f8919ac9c38b37e7fea",
+        "category": "biology",
+        "gold": 3,
+        "choice": 1,
+        "ensemble_choice": 1,
+        "correct": false,
+        "ensemble_correct": false,
+        "invalid": false,
+        "candidates": [
+          {
+            "choice": 1,
+            "option_logprobs": [
+              -2.2777230739593506,
+              -2.2308480739593506,
+              -2.9495980739593506,
+              -3.2933480739593506,
+              -2.5902230739593506,
+              -3.5902230739593506,
+              -3.9339730739593506,
+              -3.6839730739593506,
+              -2.9808480739593506,
+              -3.4339730739593506
+            ]
+          }
+        ],
+        "encoding_seconds": 0.04209837410598993,
+        "seconds": 0.10805021040141582
+      },
+      {
+        "question_id": "15",
+        "question_hash": "bf29fc24e4dd20424ad4ea513c4b65d3f39062459502beb4a98957dc1ed29a08",
+        "category": "business",
+        "gold": 5,
+        "choice": 2,
+        "ensemble_choice": 2,
+        "correct": false,
+        "ensemble_correct": false,
+        "invalid": false,
+        "candidates": [
+          {
+            "choice": 2,
+            "option_logprobs": [
+              -2.0982532501220703,
+              -2.6295032501220703,
+              -1.9732532501220703,
+              -2.7232532501220703,
+              -2.5982532501220703,
+              -2.0982532501220703,
+              -2.2857532501220703,
+              -4.71544075012207,
+              -3.8482532501220703,
+              -3.5201282501220703
+            ]
+          }
+        ],
+        "encoding_seconds": 0.037978945299983025,
+        "seconds": 0.10539226233959198
+      }
+    ],
+    "parent_matched": [
+      {
+        "question_id": "21",
+        "question_hash": "9627f7ca22c3677a15a47f068b7d1f90f1dbe5f9d8915f8919ac9c38b37e7fea",
+        "category": "biology",
+        "gold": 3,
+        "choice": 0,
+        "ensemble_choice": 0,
+        "correct": false,
+        "ensemble_correct": false,
+        "invalid": false,
+        "candidates": [
+          {
+            "choice": 0,
+            "option_logprobs": [
+              -2.6316640377044678,
+              -3.1316640377044678,
+              -2.8191640377044678,
+              -4.006664276123047,
+              -3.5691640377044678,
+              -4.444164276123047,
+              -3.5066640377044678,
+              -4.631664276123047,
+              -2.9441640377044678,
+              -3.5066640377044678
+            ]
+          }
+        ],
+        "encoding_seconds": 0.04209837410598993,
+        "seconds": 1.0342859849333763
+      },
+      {
+        "question_id": "15",
+        "question_hash": "bf29fc24e4dd20424ad4ea513c4b65d3f39062459502beb4a98957dc1ed29a08",
+        "category": "business",
+        "gold": 5,
+        "choice": 1,
+        "ensemble_choice": 1,
+        "correct": false,
+        "ensemble_correct": false,
+        "invalid": false,
+        "candidates": [
+          {
+            "choice": 1,
+            "option_logprobs": [
+              -2.545935869216919,
+              -2.108435869216919,
+              -2.920935869216919,
+              -3.170935869216919,
+              -3.545935869216919,
+              -3.858435869216919,
+              -4.23343563079834,
+              -5.10843563079834,
+              -3.983435869216919,
+              -3.733435869216919
+            ]
+          }
+        ],
+        "encoding_seconds": 0.037978945299983025,
+        "seconds": 1.0368835711851716
+      }
+    ]
+  },
+  "definition": "zero-shot direct option joint likelihood",
+  "note": "Not the official five-shot CoT setting. Ensemble averages probabilities/votes, never oracle best-of-N."
+}
