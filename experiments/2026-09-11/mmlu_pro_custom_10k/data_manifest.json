@@ -1,0 +1,82 @@
+{
+  "schema": "laces_mmlu_pro_v1",
+  "protocol": "mmlu_pro_custom_repartition_v1",
+  "seed": 42,
+  "dataset": "TIGER-Lab/MMLU-Pro",
+  "revision": "b189ec765aa7ed75c8acfea42df31fdae71f97be",
+  "source_id": "official_validation_and_test_user_authorized_repartition",
+  "counts": {
+    "train": 10212,
+    "dev": 538,
+    "test": 1194
+  },
+  "category_counts": {
+    "train": {
+      "physics": 1115,
+      "history": 330,
+      "engineering": 833,
+      "economics": 726,
+      "other": 794,
+      "health": 623,
+      "law": 891,
+      "computer science": 354,
+      "psychology": 687,
+      "math": 1159,
+      "chemistry": 972,
+      "biology": 618,
+      "business": 679,
+      "philosophy": 431
+    },
+    "dev": {
+      "math": 61,
+      "law": 47,
+      "psychology": 36,
+      "philosophy": 23,
+      "engineering": 44,
+      "economics": 38,
+      "business": 36,
+      "chemistry": 51,
+      "computer science": 19,
+      "physics": 59,
+      "health": 33,
+      "biology": 32,
+      "history": 17,
+      "other": 42
+    },
+    "test": {
+      "law": 104,
+      "chemistry": 114,
+      "engineering": 97,
+      "other": 93,
+      "computer science": 42,
+      "physics": 130,
+      "economics": 85,
+      "biology": 72,
+      "business": 79,
+      "health": 73,
+      "math": 136,
+      "philosophy": 50,
+      "psychology": 80,
+      "history": 39
+    }
+  },
+  "input_rows": 12102,
+  "unique_question_groups": 11944,
+  "conflicting_answer_groups_excluded": [],
+  "files": {
+    "train": {
+      "path": "train.jsonl",
+      "sha256": "47d4ad27bc4e99a10e44f57884525f7d145c4f4cb6f57811f143c35f3de0be30"
+    },
+    "dev": {
+      "path": "dev.jsonl",
+      "sha256": "920abca891426ec85a5b1896a4dc16c8da58c2c3e841b05d0d57e362d399a44b"
+    },
+    "test": {
+      "path": "test.jsonl",
+      "sha256": "46aa35b2515ebb3319bf979ad17e0e0550c32f13fd07f2750fd4aa6b65424a54"
+    }
+  },
+  "test_policy": "Only custom held-out test is sealed; original official test is explicitly repartitioned by user authorization.",
+  "notes": "Custom 90/10 partition, 5% of training allocation reserved for dev; not official benchmark. Normalized question+unordered-options identities deduplicated; no semantic near-duplicate guarantee."
+}
