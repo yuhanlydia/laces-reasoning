@@ -1,0 +1,21 @@
+{
+  "step": 30000,
+  "tensor_count": 662,
+  "parameter_elements": 753304195,
+  "state_roots": [
+    "alpha_heads",
+    "aux_decoder",
+    "encoder_trunk",
+    "latent_dit",
+    "logvar_head",
+    "mu_head",
+    "s1_trunk",
+    "s1_u_head",
+    "s1_v_head",
+    "state_basis",
+    "state_scale",
+    "trajectory_dit",
+    "xchunk_decay_logit",
+    "xchunk_gate"
+  ]
+}

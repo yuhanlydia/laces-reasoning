@@ -1,0 +1,8 @@
+{
+  "source_commit": "49ff6c694ae11a8fce93f45ccc999a3e39c779e7",
+  "command": ".venv/bin/python -m pytest tests/posttrain -q",
+  "exit_code": 0,
+  "passed": 48,
+  "duration_seconds": 4.17,
+  "scope": "CPU contract tests only; the new direct-S2 MMLU-Pro path was not GPU-tested in this experiment."
+}

@@ -1,0 +1,22 @@
+Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+torch.compile is not available in Python 3.10, using identity decorator instead
+`torch_dtype` is deprecated! Use `dtype` instead!
+/root/laces-reasoning/.venv/lib/python3.10/site-packages/fla/layers/rwkv7.py:143: UserWarning: According to Bo, you are using a potentially buggy FLA implementation of RWKV. If you plan to report any numbers based on this implementation, we strongly recommend cross-checking with the official repo: https://github.com/BlinkDL/RWKV-LM. Bo may disagree with results reported from this version.
+  warnings.warn(
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00, 36.97it/s]
+[base] {"step": 30000, "writer_type": "dynlowrank", "latent_dim": 32, "s1_rank": 32, "active_keys_verified": {"S0": 12, "S1": 9, "S2": 473}, "active_fingerprint": "c1fd8893084e41e6ef3e11503c0a41e703ad569a79bf14e54811755d675e8c4c", "backbone_path": "models/RWKV7-Goose-World3-2.9B-HF-fla-v2"}
+[trainable] only latent refiner: 422944
+/root/laces-reasoning/.venv/lib/python3.10/site-packages/fla/ops/rwkv7/fused_recurrent.py:302: UserWarning: Input tensor shape suggests potential format mismatch: seq_len (1) < num_heads (40). This may indicate the inputs were passed in head-first format [B, H, T, ...] when head_first=False was specified. Please verify your input tensor format matches the expected shape [B, T, H, ...].
+  warnings.warn(
+/root/laces-reasoning/.venv/lib/python3.10/site-packages/fla/ops/rwkv7/fused_recurrent.py:302: UserWarning: Input tensor shape suggests potential format mismatch: seq_len (1) < num_heads (40). This may indicate the inputs were passed in head-first format [B, H, T, ...] when head_first=False was specified. Please verify your input tensor format matches the expected shape [B, T, H, ...].
+  warnings.warn(
+Traceback (most recent call last):
+  File "/root/laces-reasoning/scripts/eval/train_recurrent_reasoner.py", line 21, in <module>
+    main()
+  File "/root/laces-reasoning/scripts/eval/train_laces_reasoner.py", line 374, in main
+    run(parse_args(argv))
+  File "/root/laces-reasoning/scripts/eval/train_laces_reasoner.py", line 286, in run
+    report = preflight(runtime,refiner,examples,splits['validation'][0],args)
+  File "/root/laces-reasoning/scripts/eval/train_laces_reasoner.py", line 213, in preflight
+    raise RuntimeError('Pretrained-module / R=0 identity gate failed')
+RuntimeError: Pretrained-module / R=0 identity gate failed

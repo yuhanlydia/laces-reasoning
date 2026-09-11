@@ -1,0 +1,83 @@
+{
+  "loading_info": {
+    "missing_keys": [],
+    "unexpected_keys": [],
+    "mismatched_keys": [],
+    "error_msgs": []
+  },
+  "tensor_checks": {
+    "lm_head.weight": {
+      "equal": false,
+      "max_abs_diff": 0.352294921875
+    },
+    "model.embeddings.weight": {
+      "equal": true,
+      "max_abs_diff": 0.0
+    },
+    "model.norm.weight": {
+      "equal": true,
+      "max_abs_diff": 0.0
+    },
+    "model.layers.0.attn.x_r": {
+      "equal": true,
+      "max_abs_diff": 0.0
+    }
+  },
+  "first_token_top5": [
+    {
+      "id": 53103,
+      "text": " tasting"
+    },
+    {
+      "id": 38279,
+      "text": " doing"
+    },
+    {
+      "id": 51534,
+      "text": " drivers"
+    },
+    {
+      "id": 19960,
+      "text": " Geo"
+    },
+    {
+      "id": 2076,
+      "text": "ns"
+    }
+  ],
+  "raw_greedy_text": " tasting tasting tasting tasting tasting tasting tasting tasting tasting tasting tasting tasting寒XYZ俆俆Browser corr Geo tasting Geo Geo Geo Geo Geo Geo Geo Geo Geo Geo Geo Geo",
+  "token_ids": [
+    53103,
+    53103,
+    53103,
+    53103,
+    53103,
+    53103,
+    53103,
+    53103,
+    53103,
+    53103,
+    53103,
+    53103,
+    11934,
+    6823,
+    10516,
+    10516,
+    48377,
+    30505,
+    19960,
+    53103,
+    19960,
+    19960,
+    19960,
+    19960,
+    19960,
+    19960,
+    19960,
+    19960,
+    19960,
+    19960,
+    19960,
+    19960
+  ]
+}

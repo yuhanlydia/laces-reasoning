@@ -1,0 +1,10 @@
+{
+  "humanlong/laces-2.9b-dynlowrank-r32-s0frozen-joint-b4-50k-fla03": {
+    "revision": "6f814b542ff778d12910e86fa1fad038ab98bd58",
+    "last_modified": "2026-09-09T10:23:02+00:00"
+  },
+  "RWKV/RWKV7-Goose-World3-2.9B-HF": {
+    "revision": "b742a96904c69424901f2b8cf729b67863168063",
+    "last_modified": "2025-07-23T00:02:57+00:00"
+  }
+}

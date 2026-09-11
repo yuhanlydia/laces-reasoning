@@ -1,0 +1,72 @@
+{
+  "row": {
+    "prefix": "Agent A knows: the treasure is hidden by the glass tower.\nAgent B knows: the glass tower is located in the town of Selby.\nQuestion: in which town is the treasure hidden? Answer: the town of",
+    "answer": "selby"
+  },
+  "prefix_tokens": 46,
+  "answer_tokens": [
+    [
+      22452,
+      1782
+    ]
+  ],
+  "scores": {
+    "laces": {
+      "values": [
+        -4.684530735015869,
+        -4.665782928466797,
+        -4.665782928466797,
+        -4.665782928466797,
+        -4.665782928466797,
+        -4.665782928466797,
+        -4.665782928466797,
+        -4.665782928466797
+      ],
+      "std": 0.006200254219599158,
+      "range": 0.018747806549072266
+    },
+    "raw": {
+      "values": [
+        -4.7099504470825195,
+        -4.7099504470825195,
+        -4.7099504470825195,
+        -4.7099504470825195,
+        -4.7099504470825195,
+        -4.7099504470825195,
+        -4.7099504470825195,
+        -4.7099504470825195
+      ],
+      "std": 0.0,
+      "range": 0.0
+    }
+  },
+  "candidate_rewards": [
+    -4.619016170501709,
+    -4.749014377593994,
+    -4.754061222076416,
+    -4.720013618469238
+  ],
+  "candidate_reward_std": 0.0544075697159935,
+  "laces_text": " Selby. (The glass tower is located in the town of Selby.)�The glass tower is located in the town of Selby. (The glass",
+  "raw_text": " Selby.\nThe answer is:\nA:\nThe treasure is hidden in the town of Selby.<|rwkv_tokenizer_end_of_text|>Q: 请将下文翻",
+  "pg_update": {
+    "loss": 1.9392423629760742,
+    "reward_std": 0.07533138245344162,
+    "grad_norm": 12.737865447998047,
+    "frozen_base_has_grad": false,
+    "changed_refiner_tensors": [
+      "delta_head.weight",
+      "delta_head.bias"
+    ]
+  },
+  "ce_gradient": {
+    "loss_requires_grad": false,
+    "norm": null,
+    "finite": null
+  },
+  "actual_calls": {
+    "S0": 0,
+    "S1": 18,
+    "S2": 0
+  }
+}

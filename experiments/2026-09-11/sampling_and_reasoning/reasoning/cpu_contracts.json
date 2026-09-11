@@ -1,0 +1,7 @@
+{
+  "command": ".venv/bin/python -m pytest tests/test_pretrained_laces_reasoning.py -q",
+  "exit_code": 0,
+  "passed": 23,
+  "duration_seconds": 2.35,
+  "source_commit": "82c456765b9f9fa4819ab7a53ebd3e2ae38727a2"
+}

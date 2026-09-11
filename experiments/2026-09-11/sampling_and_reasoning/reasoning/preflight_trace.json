@@ -1,0 +1,35 @@
+{
+  "scores": [
+    {
+      "value": -4.684530735015869,
+      "raw": false,
+      "calls": {
+        "S0": 1,
+        "S1": 1,
+        "S2": 2000
+      }
+    },
+    {
+      "value": -4.665782928466797,
+      "raw": false,
+      "calls": {
+        "S0": 1,
+        "S1": 2,
+        "S2": 2000
+      }
+    }
+  ],
+  "identities": [
+    {
+      "steps": 0,
+      "equal": true,
+      "same_object": true
+    }
+  ],
+  "error": "Pretrained-module / R=0 identity gate failed",
+  "calls": {
+    "S0": 1,
+    "S1": 3,
+    "S2": 2000
+  }
+}

@@ -1,0 +1,7 @@
+[
+  {"topic":"biology", "prompt":"Question: How do plants use sunlight to make food? Answer in one clear short paragraph:"},
+  {"topic":"history", "prompt":"Question: How did the printing press change the spread of knowledge in Europe? Answer in one clear short paragraph:"},
+  {"topic":"programming", "prompt":"Question: How does binary search work, and why does it require a sorted list? Answer in one clear short paragraph:"},
+  {"topic":"arithmetic", "prompt":"Question: What is 17 multiplied by 23? Show a short calculation and give the final answer:"},
+  {"topic":"chinese", "prompt":"问题：为什么有些树的叶子在秋天会变黄或变红？请用一小段中文解释。回答："}
+]

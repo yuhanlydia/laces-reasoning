@@ -1,0 +1,90 @@
+config_name: rwkv_relay_2.9B_dynamic_basis_dynlowrank_r32
+data:
+  use_preprocessed: true
+  token_dir: preprocessed_data/owt_rwkv_tokens/train
+  latent_dir: null
+  max_length: 512
+  num_workers: 0
+  max_samples: null
+  use_external_latents: false
+model:
+  type: rwkv_state_hijack_dit
+  rwkv_name: RWKV/RWKV7-Goose-World3-2.9B-HF
+  rwkv_local_path: models/RWKV7-Goose-World3-2.9B-HF-fla-v2
+  rwkv_trust_remote_code: true
+  add_mask_token: false
+  pad_token_strategy: eos
+  encoder_type: variational
+  latent_dim: 32
+  n_basis: 16
+  s1_writer_type: dynlowrank
+  s1_rank: 32
+  s1_dyn_hidden: 128
+  dit_hidden: 768
+  dit_depth: 8
+  dit_num_heads: 4
+  trajectory_state_hidden: 256
+  trajectory_state_depth: 4
+  trajectory_state_num_heads: 4
+  dit_num_tokens: 4
+  trajectory_mode: true
+  trajectory_chunk_size: 32
+  trajectory_horizon: 16
+  trajectory_denoiser_type: birwkv
+  trajectory_state_decoder_type: dit
+  trajectory_s1_mode: independent
+  trajectory_state_blend: 0.7
+  use_cond_boundary: true
+training:
+  seed: 42
+  num_epochs: 50
+  num_train_steps: 50000
+  train_batch_size: 4
+  eval_batch_size: 1
+  dtype: bf16
+  lr_schedule: cosine
+  warmup_steps: 500
+  resume: checkpoints/laces-champion
+  world_size: 1
+  save_every_n_steps: 10000
+  stage: 2
+  gen_type: ddpm
+  trajectory_condition_first: false
+  s1_self_forcing: false
+  self_forcing_prob: 0.5
+  self_forcing_prob_warmup: 1000
+  self_forcing_bptt_chunks: 1
+  prefix_suffix_trajectory_s2: true
+  cfg_drop_prob: 0.1
+  prefix_suffix_min_prefix: 32
+  prefix_suffix_min_suffix: 32
+  s2_unfreeze_s1: true
+  s2_unfreeze_s0: false
+  s2_coadapt_ce_checkpoint: true
+  require_s1_writer_grad: true
+logging:
+  run_name: laces-2.9B-dynlowrank-r32-s0frozen-joint-b4-50k-fla03
+  wandb_project: laces-dynamic-basis
+  wandb_dir: ./outputs/
+  log_freq: 10
+  save_freq: 10000
+  save_dir: ./outputs_dynamic_basis
+loss:
+  text_loss_weight: 1.0
+  diff_loss_weight: 1.0
+  trajectory_delta_loss_weight: 0.0
+  kl_weight: 0.05
+  kl_warmup_steps: 2000
+  free_bits: 0.1
+  s2_coadapt_ce_loss_weight: 0.5
+optimizer:
+  name: adamw
+  lr: 0.0001
+  weight_decay: 0.01
+  beta1: 0.9
+  beta2: 0.95
+  eps: 1.0e-08
+  grad_clip_norm: 1.0
+tokenizer:
+  cache_dir: ./data/huggingface
+  local_files_only: true

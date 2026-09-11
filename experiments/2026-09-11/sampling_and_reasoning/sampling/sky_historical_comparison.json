@@ -1,0 +1,22 @@
+{
+  "settings_match_historical": true,
+  "text_identical": false,
+  "common_generated_prefix_characters": 766,
+  "norms": {
+    "z_prefix_norm": {
+      "current": 9.180791854858398,
+      "historical": 9.186152458190918,
+      "relative_difference_percent": -0.058355261976298894
+    },
+    "z_suffix_traj_norm": {
+      "current": 9.217552185058594,
+      "historical": 9.223349571228027,
+      "relative_difference_percent": -0.06285553989538001
+    },
+    "state_norm": {
+      "current": 8.01837307214737,
+      "historical": 8.025195121765137,
+      "relative_difference_percent": -0.08500789718202924
+    }
+  }
+}

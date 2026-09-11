@@ -1,0 +1,32 @@
+[
+  {
+    "topic": "biology",
+    "assessment": "开头切题；随后转向新闻叙述、烧木头和炉具广告。",
+    "sampling_settings_match": true,
+    "finite_norms": true
+  },
+  {
+    "topic": "history",
+    "assessment": "前段切题；随后重复 Advertisements、无关标签和数字。",
+    "sampling_settings_match": true,
+    "finite_norms": true
+  },
+  {
+    "topic": "programming",
+    "assessment": "开头部分正确；随后混淆查找与排序，并错误地声称二分查找为 O(n log n)。",
+    "sampling_settings_match": true,
+    "finite_norms": true
+  },
+  {
+    "topic": "arithmetic",
+    "assessment": "失败：输出 399，并写出 340 + 51 = 501；正确答案为 391。",
+    "sampling_settings_match": true,
+    "finite_norms": true
+  },
+  {
+    "topic": "chinese",
+    "assessment": "中文可读但解释存在事实错误和自相矛盾，随后切换成英文。",
+    "sampling_settings_match": true,
+    "finite_norms": true
+  }
+]
