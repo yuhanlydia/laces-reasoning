@@ -37,4 +37,4 @@ Captured 2026-09-11T06:41:20.927977+00:00. See `progress/snapshot.json` and per-
 - distill: 1500 completed steps. Latest completed validation (dev_step_001000): current 11.34%, raw_rwkv 23.23%, parent_matched 14.31%.
 - grpo_direct: 487 completed steps.
 
-Queued: distill_grpo. These are preliminary custom-split results; training remains active as recorded in the snapshot. Final test has not been evaluated.
+The distillation route was stopped by the operator after its loss rose and development accuracy stayed below the parent; it reached 5,936 steps before termination. The dependent distill→GRPO route was skipped. Direct GRPO remains the active route and continues toward 10,000 steps. The final test has not been evaluated.
