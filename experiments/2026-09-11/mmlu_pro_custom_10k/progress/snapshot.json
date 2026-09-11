@@ -1,5 +1,5 @@
 {
-  "captured_at_utc": "2026-09-11T06:38:47.062530+00:00",
+  "captured_at_utc": "2026-09-11T06:41:20.927977+00:00",
   "training_source_commit": "34ce3f317c41c19ba3d4308cb892b197b5e2cfe0",
   "status": {
     "runs": {},
@@ -77,24 +77,24 @@
       }
     },
     "grpo_direct": {
-      "completed_steps": 480,
+      "completed_steps": 487,
       "latest_metric": {
         "skipped_flat": false,
-        "grad_norm": 185.84780883789062,
-        "pg_loss": -1.3105571269989014e-05,
-        "reference_kl": 0.006507406674927552,
+        "grad_norm": 223.40660095214844,
+        "pg_loss": 2.444721758365631e-06,
+        "reference_kl": 0.007078658426280526,
         "clip_fraction": 0.0,
         "updates": 1,
-        "reward_mean": -2.480442523956299,
-        "reward_std": 0.013645383529365063,
+        "reward_mean": -3.244541645050049,
+        "reward_std": 0.04859834536910057,
         "group_accuracy": 0.0,
-        "step": 480,
-        "seconds": 21.46923978626728,
+        "step": 487,
+        "seconds": 20.99097222648561,
         "objective": "grpo",
-        "question_hash": "85d228a60780ac41226eff41d24443b8964acba9bbfaaa0da9fcba154485994c"
+        "question_hash": "1fa1342af3e5762a9f2ffec2a4f3c2ce97d5753597e86438fe8cfbfabfbd4d51"
       },
       "development": {}
     }
   },
-  "note": "Live snapshot, not completion. Metrics use different randomly sampled training questions; development evaluates the fixed custom split. Final test remains unevaluated."
+  "note": "Live snapshot, not completion. Training questions vary per step. Fixed custom development split; final test remains unevaluated."
 }

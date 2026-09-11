@@ -32,4 +32,9 @@ This record documents the split and launch, not completion or model improvement.
 
 ## Progress snapshot
 
-See `progress/snapshot.json` for the UTC capture time and exact counts, and per-route `metrics.jsonl` for recorded training metrics. At this snapshot, distillation completed 1,500 steps and direct GRPO 480; the chained route is queued. Distillation development accuracy was 12.27% at step 500 and 11.34% at step 1,000 (538 examples), below matched parent LACES 14.31% and raw RWKV 23.23%. Step 1,500 development evaluation was not yet available. Direct GRPO had not reached its first development evaluation. These preliminary results show no distillation improvement; all authorized training jobs remain scheduled.
+Captured 2026-09-11T06:41:20.927977+00:00. See `progress/snapshot.json` and per-route metrics and development reports.
+
+- distill: 1500 completed steps. Latest completed validation (dev_step_001000): current 11.34%, raw_rwkv 23.23%, parent_matched 14.31%.
+- grpo_direct: 487 completed steps.
+
+Queued: distill_grpo. These are preliminary custom-split results; training remains active as recorded in the snapshot. Final test has not been evaluated.
