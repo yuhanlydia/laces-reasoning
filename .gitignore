@@ -12,4 +12,5 @@ hf_release/
 models/RWKV7-Goose-World3-2.9B-HF/
 models/RWKV7-Goose-World3-2.9B-HF-fla-v2/
 .venv/
+.worktrees/
 *.log
