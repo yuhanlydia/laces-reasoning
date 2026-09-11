@@ -116,3 +116,36 @@ Old standalone checkpoints are intentionally rejected by the new refiner loader.
 The earlier fixed-basis champion at `outputs_relay/traj32x16-2.9B-singlez-bridge-v2-s2-birwkv-joint-scratch/step_00026000`
 (Hub: `SII-Jiaquan/StateDiffRWKV-2.9B-512-pretrained`) remains a historical baseline,
 not the current dynamic-basis step-30,000 model.
+
+<!-- LACES-MMLU-PRO-S2-POSTTRAIN-V1 -->
+## Direct S2 post-training on MMLU-Pro
+
+The direct baseline updates the **existing pretrained `trajectory_dit` (S2)**.
+S0, the native S1 dynamic writer/state scale and RWKV remain frozen. It does not
+instantiate a new writer, encoder, classifier or recurrent refiner. The earlier
+pretrained-interface refiner and historical diagnostics are retained separately.
+
+[Full objectives, probability contracts, data protocol and commands](docs/MMLU_PRO_S2_POSTTRAINING.md)
+
+```bash
+python -m pytest tests/posttrain -q
+python -m laces_posttrain.prepare --output data/mmlu_pro_pilot
+export DATA_DIR="$PWD/data/mmlu_pro_pilot"
+export CKPT_DIR=/absolute/path/to/step_00030000
+GPU=0 MODE=preflight OUTPUT_DIR=results/mmlu_pro/preflight \
+  bash training/run_mmlu_pro_s2.sh
+```
+
+`OBJECTIVE=distill` defaults to reward-weighted **candidate self-distillation**;
+`DISTILL_SOURCE=rationale` instead uses provided training-only teacher traces.
+`OBJECTIVE=grpo` uses detached diffusion transitions, clipped joint-density ratios
+and a frozen S2 reference. `INIT_S2=.../best_dev.pt` enables distillation -> GRPO.
+
+MMLU-Pro has no official training split. Default preparation makes a small,
+explicitly labeled **validation-adaptation pilot** (normally 56 train / 14 dev),
+not the official five-shot setting. Official test is never used for optimization
+or checkpoint selection. Independent training data can be imported with provenance
+and normalized problem-overlap checks. Only an explicit final-eval invocation may
+read test labels. CPU tests establish software contracts, not actual 30k GPU
+accuracy or a successful reproduction of BDH-CQ.
+<!-- /LACES-MMLU-PRO-S2-POSTTRAIN-V1 -->

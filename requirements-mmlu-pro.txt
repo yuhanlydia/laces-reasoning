@@ -1,0 +1,5 @@
+# Optional preparation/test dependencies only. Keep the trained checkpoint's
+# existing torch / FLA / transformers / omegaconf environment unchanged.
+datasets>=2.19
+huggingface_hub>=0.23
+pytest>=7
