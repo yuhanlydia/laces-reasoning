@@ -84,9 +84,9 @@ def _seed(base: int, text: str) -> int:
     return int.from_bytes(h[:8], "big") % (2**31 - 1)
 
 
-def evaluation_seed(base: int, problem_hash: str, budget: int, sample_idx: int) -> int:
-    """Matched evaluation seed shared by raw/parent/current arms."""
-    return _seed(base, f"{problem_hash}:budget={budget}:sample={sample_idx}")
+def evaluation_seed(base: int, problem_hash: str, _budget: int, sample_idx: int) -> int:
+    """Matched seed shared by arms and depth budgets for one latent trajectory."""
+    return _seed(base, f"{problem_hash}:sample={sample_idx}")
 
 
 def _generator(device, seed: int):
@@ -216,11 +216,11 @@ def _evaluate_arm(native, rows, model, args, cfg, *, raw: bool, arm: str):
         for row in rows:
             prompt = format_problem(row)
             prefix, cond = native.encode_prompt(prompt, seed=_seed(args.seed, row["problem_hash"] + ":evalcond"))
-            for b in budgets:
-                for sample_idx in range(args.eval_samples):
-                    seed = evaluation_seed(args.seed, row["problem_hash"], b, sample_idx)
-                    z = (torch.zeros(1, native.horizon, native.audit["latent_dim"], device=native.device)
-                         if raw else _sample_plan(model, cond, native, cfg, seed))
+            for sample_idx in range(args.eval_samples):
+                seed = evaluation_seed(args.seed, row["problem_hash"], args.max_blocks, sample_idx)
+                z = (torch.zeros(1, native.horizon, native.audit["latent_dim"], device=native.device)
+                     if raw else _sample_plan(model, cond, native, cfg, seed))
+                for b in budgets:
                     gen = generate_blocks(native, prefix, z, tokens_per_block=args.tokens_per_block,
                                           max_blocks=b, eos_id=None, raw=raw)
                     st = stats[b]

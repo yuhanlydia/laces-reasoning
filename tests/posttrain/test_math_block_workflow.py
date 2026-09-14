@@ -88,6 +88,19 @@ def test_eval_reports_reasoning_scaling_budgets_without_using_test_for_selection
     assert set(result['metrics']['current'])=={'1','2','4'}
 
 
-def test_evaluation_seed_is_arm_independent():
+def test_eval_samples_one_plan_per_row_and_reuses_it_for_all_budgets(tmp_path, monkeypatch):
+    calls=[]
+    def sample_once(model,cond,native,cfg,seed):
+        calls.append(seed)
+        return torch.ones(1,native.horizon,native.audit['latent_dim'])
+    monkeypatch.setattr('laces_posttrain.run_math_block_grpo._sample_plan',sample_once)
+    result=run(args(bundle(tmp_path),tmp_path/'eval','--mode','eval','--split','dev'),runtime=FakeNative())
+    rows=result['metrics']['current']['1']['n']
+    assert len(calls)==2*rows  # parent and current; raw RWKV has no latent plan
+    assert result['metrics']['current']['1']['n']==result['metrics']['current']['4']['n']
+
+
+def test_evaluation_seed_reuses_one_trajectory_across_depth_budgets():
     assert evaluation_seed(42,'abc',8,0)==evaluation_seed(42,'abc',8,0)
-    assert evaluation_seed(42,'abc',8,0)!=evaluation_seed(42,'abc',4,0)
+    assert evaluation_seed(42,'abc',8,0)==evaluation_seed(42,'abc',4,0)
+    assert evaluation_seed(42,'abc',8,0)!=evaluation_seed(42,'abc',8,1)
