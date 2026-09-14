@@ -149,3 +149,37 @@ and normalized problem-overlap checks. Only an explicit final-eval invocation ma
 read test labels. CPU tests establish software contracts, not actual 30k GPU
 accuracy or a successful reproduction of BDH-CQ.
 <!-- /LACES-MMLU-PRO-S2-POSTTRAIN-V1 -->
+
+<!-- LACES-BLOCK-GRPO-V1 -->
+## 16-block latent reasoning on GSM8K / MATH
+
+MMLU-Pro direct-option experiments showed that the S2 policy receives a real answer-reward
+gradient, but they do not exercise the full 16-block latent trajectory. The block-GRPO
+workflow therefore uses GSM8K and Hendrycks MATH to train the **existing S2 only** while
+keeping S0, dynamic S1/state scaling, and RWKV frozen.
+
+```text
+prompt -> frozen S0 -> S2 samples z1..z16
+       -> [S1(z1) -> <=32 tokens] -> ... -> [S1(z16) -> <=32 tokens]
+       -> exact/verifiable answer reward
+```
+
+Block reward uses frozen-model potential differences `Phi_h - Phi_{h-1}` plus terminal
+exact-answer / format bonuses. PPO ratios and KL remain factorized by latent block, and the
+default advantage is Dr.GRPO-style group centering without reward-standard-deviation
+normalization. Native boundary potentials are scored from transient cache copies, avoiding
+quadratic replay of all earlier blocks. Evaluation reports `Acc@1/2/4/8/16` for raw RWKV,
+frozen parent LACES, and the trained S2; sealed test is never used to choose a budget or checkpoint.
+
+```bash
+python -m laces_posttrain.prepare_math --task gsm8k --output data/gsm8k_block_grpo
+python -m laces_posttrain.prepare_math --task math --output data/math_block_grpo
+export CKPT_DIR=/absolute/path/to/step_00030000
+GPU=0 DATA_DIR="$PWD/data/gsm8k_block_grpo" MODE=preflight \
+  OUTPUT_DIR=results/block_grpo/gsm8k_preflight bash training/run_math_block_grpo.sh
+```
+
+See [the implementation design](docs/superpowers/specs/2026-09-11-block-diffusion-grpo-design.md)
+and [the runnable experiment commands](experiments/2026-09-14/block_diffusion_grpo/commands.sh).
+No GPU accuracy claim is made by the code commit itself.
+<!-- /LACES-BLOCK-GRPO-V1 -->
