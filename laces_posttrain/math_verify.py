@@ -28,12 +28,19 @@ def _balanced_braced(text: str, brace_at: int) -> tuple[str, int] | None:
 
 def _boxed_occurrences(text: str) -> list[tuple[int, str]]:
     out: list[tuple[int, str]] = []
-    for m in re.finditer(r"\\boxed\s*", text):
+    for m in re.finditer(r"\\+boxed\s*", text):
         j = m.end()
         if j < len(text) and text[j] == "{":
             parsed = _balanced_braced(text, j)
             if parsed is not None:
                 out.append((m.start(), parsed[0].strip()))
+        else:
+            # Hendrycks MATH contains a small number of valid TeX answers such
+            # as ``\boxed 9``. Keep this deliberately numeric-only so an
+            # unbraced expression cannot consume arbitrary following prose.
+            unbraced = re.match(r"[+-]?(?:\d+(?:\.\d*)?|\.\d+)", text[j:])
+            if unbraced is not None:
+                out.append((m.start(), unbraced.group(0)))
     return out
 
 
@@ -41,12 +48,17 @@ def _strip_wrappers(value: str) -> str:
     value = value.strip()
     while value.startswith("$") and value.endswith("$") and len(value) >= 2:
         value = value[1:-1].strip()
+    value = re.sub(r"^\\+boxed", r"\\boxed", value)
     if value.startswith(r"\boxed"):
         m = re.match(r"\\boxed\s*", value)
         if m and m.end() < len(value) and value[m.end()] == "{":
             parsed = _balanced_braced(value, m.end())
             if parsed and not value[parsed[1]:].strip():
                 value = parsed[0].strip()
+        elif m:
+            unbraced = re.fullmatch(r"\\boxed\s+([+-]?(?:\d+(?:\.\d*)?|\.\d+))", value)
+            if unbraced:
+                value = unbraced.group(1)
     while value.startswith("{") and value.endswith("}"):
         parsed = _balanced_braced(value, 0)
         if parsed is None or parsed[1] != len(value):

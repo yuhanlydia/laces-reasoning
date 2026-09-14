@@ -25,6 +25,10 @@ MATH_CONFIGS = (
 )
 
 
+class UnverifiableAnswerError(ValueError):
+    """The source row has no explicit answer that the conservative verifier accepts."""
+
+
 def _norm(text: str) -> str:
     return " ".join(unicodedata.normalize("NFKC", str(text)).casefold().split())
 
@@ -78,7 +82,7 @@ def canonicalize_record(row: dict, task: str, *, source: str, revision: str, sou
         raise ValueError("Missing reference rationale/answer")
     extracted = extract_final_answer(rationale)
     if extracted is None:
-        raise ValueError("Could not extract an explicit verified answer from reference rationale")
+        raise UnverifiableAnswerError("Could not extract an explicit verified answer from reference rationale")
     numeric = canonical_numeric(extracted)
     answer = numeric if numeric is not None else extracted.strip().strip("$")
     ph = problem_hash(task, problem)
@@ -101,6 +105,22 @@ def _ensure_unique(rows: list[dict], label: str) -> set[str]:
     if len(set(keys)) != len(keys):
         raise ValueError(f"Duplicate normalized problems in {label}")
     return set(keys)
+
+
+def _deduplicate_source_train(rows: list[dict]) -> tuple[list[dict], list[str]]:
+    grouped: dict[str, list[dict]] = defaultdict(list)
+    for row in rows:
+        grouped[row["problem_hash"]].append(row)
+    unique: list[dict] = []
+    duplicate_hashes: list[str] = []
+    for ph in sorted(grouped):
+        group = grouped[ph]
+        answers = {row["answer"] for row in group}
+        if len(answers) != 1:
+            raise ValueError(f"Conflicting answers for duplicate source problem {ph}")
+        unique.append(min(group, key=lambda row: json.dumps(row, ensure_ascii=False, sort_keys=True)))
+        duplicate_hashes.extend([ph] * (len(group) - 1))
+    return unique, duplicate_hashes
 
 
 def _partition_train(rows: list[dict], *, seed: int, dev_fraction: float) -> tuple[list[dict], list[dict]]:
@@ -128,12 +148,34 @@ def prepare_bundle(train_rows: list[dict], test_rows: list[dict], output: Path |
     output = Path(output)
     if (output / "manifest.json").exists():
         raise ValueError("Output bundle already exists; use a fresh directory")
-    canonical_train = [canonicalize_record(r, task, source=source, revision=revision, source_split="train") for r in train_rows]
+    canonical_train: list[dict] = []
+    excluded_train: list[str] = []
+    for row in train_rows:
+        try:
+            canonical_train.append(canonicalize_record(
+                row, task, source=source, revision=revision, source_split="train"
+            ))
+        except UnverifiableAnswerError:
+            problem = row.get("question" if task.lower() == "gsm8k" else "problem")
+            if not isinstance(problem, str) or not problem.strip():
+                raise
+            excluded_train.append(problem_hash(task, problem))
+    canonical_train, duplicate_train = _deduplicate_source_train(canonical_train)
     canonical_test = [canonicalize_record(r, task, source=source, revision=revision, source_split="test") for r in test_rows]
     train_keys = _ensure_unique(canonical_train, "source train")
     test_keys = _ensure_unique(canonical_test, "source test")
-    if train_keys & test_keys:
-        raise ValueError("Problem overlap between official/source train and sealed test")
+    overlap = sorted(train_keys & test_keys)
+    if overlap:
+        train_by_hash = {row["problem_hash"]: row for row in canonical_train}
+        test_by_hash = {row["problem_hash"]: row for row in canonical_test}
+        for ph in overlap:
+            if train_by_hash[ph]["answer"] != test_by_hash[ph]["answer"]:
+                raise ValueError(f"Conflicting answers for train/test duplicate {ph}")
+        # The official test remains authoritative and sealed. Removing its
+        # duplicates from train prevents leakage without dropping test rows.
+        overlap_set = set(overlap)
+        canonical_train = [row for row in canonical_train if row["problem_hash"] not in overlap_set]
+        train_keys = _ensure_unique(canonical_train, "source train after test-overlap exclusion")
     train, dev = _partition_train(canonical_train, seed=seed, dev_fraction=dev_fraction)
     sets = {"train": _ensure_unique(train, "train"), "dev": _ensure_unique(dev, "dev"), "test": test_keys}
     for a, b in (("train", "dev"), ("train", "test"), ("dev", "test")):
@@ -151,6 +193,18 @@ def prepare_bundle(train_rows: list[dict], test_rows: list[dict], output: Path |
         "seed": seed,
         "dev_fraction": dev_fraction,
         "counts": {name: len(rows) for name, rows in parts.items()},
+        "excluded_unverifiable_train": {
+            "count": len(excluded_train),
+            "problem_hashes": sorted(excluded_train),
+        },
+        "deduplicated_source_train": {
+            "count": len(duplicate_train),
+            "problem_hashes": sorted(duplicate_train),
+        },
+        "excluded_train_test_overlap": {
+            "count": len(overlap),
+            "problem_hashes": overlap,
+        },
         "files": {name: {"path": f"{name}.jsonl", "sha256": digest(output / f"{name}.jsonl")} for name in parts},
         "verifier_version": VERIFIER_VERSION,
         "test_policy": "sealed test is excluded from training, reward, development selection, and resume contracts",

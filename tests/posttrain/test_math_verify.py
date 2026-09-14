@@ -19,6 +19,11 @@ def test_math_boxed_fraction_is_compared_as_reduced_fraction():
     assert verify_answer(r'We conclude \\boxed{6/8}.', r'\\frac{3}{4}', 'math')
 
 
+def test_math_extracts_unbraced_boxed_answer_from_source_data():
+    assert extract_final_answer(r'Therefore the answer is $\\boxed 9$.') == '9'
+    assert verify_answer(r'Therefore the answer is $\\boxed 9$.', '9', 'math')
+
+
 def test_final_answer_anchoring_prefers_last_explicit_answer():
     text = r'First guess: \\boxed{2}. Recheck. Final answer: 3'
     assert extract_final_answer(text) == '3'

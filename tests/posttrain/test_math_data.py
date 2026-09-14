@@ -2,6 +2,7 @@ import pytest
 
 from laces_posttrain.prepare_math import (
     canonicalize_record,
+    problem_hash,
     prepare_bundle,
     read_evaluation_bundle,
     read_training_bundle,
@@ -38,9 +39,24 @@ def test_bundle_partition_is_deterministic_and_test_is_sealed(tmp_path):
     assert len(sealed)==3 and m['source_revision']=='sha1'
 
 
-def test_cross_split_duplicate_is_rejected(tmp_path):
-    with pytest.raises(ValueError,match='overlap'):
-        prepare_bundle([gsm(1),gsm(2)],[gsm(2)],tmp_path,task='gsm8k',source='x',revision='r')
+def test_cross_split_duplicate_is_removed_from_train_with_audit(tmp_path):
+    manifest=prepare_bundle(
+        [gsm(1),gsm(2),gsm(3)],[gsm(2)],tmp_path,
+        task='gsm8k',source='x',revision='r',
+    )
+    assert manifest['counts']=={'train':1,'dev':1,'test':1}
+    assert manifest['excluded_train_test_overlap']=={
+        'count':1,
+        'problem_hashes':[problem_hash('gsm8k','A store has 2 boxes. How many?')],
+    }
+
+
+def test_cross_split_duplicate_with_conflicting_answer_is_rejected(tmp_path):
+    with pytest.raises(ValueError,match='Conflicting answers'):
+        prepare_bundle(
+            [gsm(1),gsm(2),gsm(3)],[gsm(2,answer='work\n#### 99')],tmp_path,
+            task='gsm8k',source='x',revision='r',
+        )
 
 
 def test_math_stratified_dev_keeps_each_category(tmp_path):
@@ -63,3 +79,38 @@ def test_unverifiable_math_solution_is_rejected():
     row={'problem':'prove something','solution':'There is no explicitly marked final result.','type':'geometry'}
     with pytest.raises(ValueError,match='answer'):
         canonicalize_record(row,'math',source='math',revision='r')
+
+
+def test_bundle_audits_and_excludes_unverifiable_math_training_rows(tmp_path):
+    train=[math_row(i) for i in range(4)]+[
+        {'problem':'Malformed source item','solution':r'There are no values, so \\boxed{}.', 'type':'algebra'}
+    ]
+    manifest=prepare_bundle(train,[math_row(100)],tmp_path,task='math',source='math',revision='r')
+    assert manifest['counts']=={'train':3,'dev':1,'test':1}
+    assert manifest['excluded_unverifiable_train']=={
+        'count':1,
+        'problem_hashes':[problem_hash('math','Malformed source item')],
+    }
+
+
+def test_bundle_deduplicates_identical_source_train_problems_with_audit(tmp_path):
+    duplicate=math_row(7)
+    duplicate_spacing={**duplicate,'problem':'Compute 7+0.  '}
+    manifest=prepare_bundle(
+        [math_row(1),math_row(2),duplicate,duplicate_spacing],
+        [math_row(100)],tmp_path,task='math',source='math',revision='r',
+    )
+    assert manifest['counts']=={'train':2,'dev':1,'test':1}
+    assert manifest['deduplicated_source_train']=={
+        'count':1,
+        'problem_hashes':[problem_hash('math','Compute 7+0.')],
+    }
+
+
+def test_bundle_rejects_conflicting_answers_for_duplicate_source_problem(tmp_path):
+    conflicting={**math_row(7),'solution':r'Work. \\boxed{8}'}
+    with pytest.raises(ValueError,match='Conflicting answers'):
+        prepare_bundle(
+            [math_row(1),math_row(2),math_row(7),conflicting],
+            [math_row(100)],tmp_path,task='math',source='math',revision='r',
+        )
