@@ -183,3 +183,14 @@ See [the implementation design](docs/superpowers/specs/2026-09-11-block-diffusio
 and [the runnable experiment commands](experiments/2026-09-14/block_diffusion_grpo/commands.sh).
 No GPU accuracy claim is made by the code commit itself.
 <!-- /LACES-BLOCK-GRPO-V1 -->
+
+## 10k text-continuation diagnostic
+
+A paired 32-document OpenWebText probe compares the native 10k LACES checkpoint with
+correct-prefix and mismatched latents while keeping S1 and RWKV identical. Correct-prefix
+latents did not improve gold continuation likelihood: mean NLL/token was `2.4990` versus
+`2.4924` for mismatched latents, with a 40.6% paired win rate. The bootstrap interval for
+the paired advantage includes zero. This is negative evidence for useful S2 conditioning
+at 10k under the tested sampler, not a decontaminated benchmark result.
+
+See [the protocol, limitations, and complete result](experiments/2026-09-15/owt_continuation_10k/README.md).
