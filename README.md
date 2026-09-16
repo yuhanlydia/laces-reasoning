@@ -99,6 +99,23 @@ python scripts/eval/sample_prefix_suffix_trajectory_cfg.py \
 
 These are recorded single-prompt settings, not validation-selected reasoning hyperparameters.
 
+## Next evaluation stage: open-context generative benchmarks
+
+The next stage tests the capability most aligned with the OpenWebText-trained dynamic
+rank-32 writer: reading supplied natural-language context, writing input-dependent recurrent
+state, and generating an open-ended answer. The primary suite uses LongBench v1 open QA and
+retrieval, BABILong/RULER writable-state stress tests, and LongBench summarization. Mathematics,
+code, closed-book recall, and A/B/C/D benchmarks are excluded from the first wave.
+
+Every reported comparison uses matched prompts and token budgets for the frozen raw RWKV and
+full dynamic LACES, the aligned first-token cache protocol, official task metrics, per-length
+results, and paired statistics. The historical fixed-basis checkpoint is reported as a
+secondary reference rather than a training-controlled ablation.
+
+See the approved [open-context benchmark suite design](docs/superpowers/specs/2026-09-16-open-context-benchmark-suite-design.md)
+for datasets, pinned revisions, gates, concurrency rules, required artifacts, and success
+criteria. This is a forward plan, not a benchmark-improvement claim.
+
 ## Historical experiments are retained
 
 - [E1-E5 notes and capacity audit](experiments/2026-08-27/): fixed-basis alignment diagnostics

@@ -40,6 +40,7 @@ from scripts.eval.relay_utils import load_relay_model
 
 # Proven trajectory sampling pipeline (sampler dispatch + helpers).
 from scripts.eval.sample_prefix_suffix_trajectory_cfg import (
+    apply_generated_state,
     apply_repetition_penalty,
     apply_top_p,
     encode_prefix,
@@ -177,7 +178,7 @@ def generate_answer_trajectory(model, tokenizer, input_ids, prefix_cache, prefix
         blend = float(model.config.get("trajectory_state_blend", getattr(model, "trajectory_state_blend", 1.0)))
     else:
         layer_states = None
-        blend = 1.0
+        blend = float(model.config.get("trajectory_state_blend", getattr(model, "trajectory_state_blend", 1.0)))
 
     stop = False
     for h in range(z_traj.shape[1]):
@@ -188,7 +189,7 @@ def generate_answer_trajectory(model, tokenizer, input_ids, prefix_cache, prefix
             past_kv = model.blend_into_cache(past_kv, states_h, blend)
         else:
             states_h = model.predict_states(z_traj[:, h])
-            past_kv = model.inject_into_cache(past_kv, states_h)
+            past_kv = apply_generated_state(model, past_kv, states_h, blend)
         context_ids = torch.tensor([all_ids], device=input_ids.device, dtype=torch.long)
         context_mask = torch.ones_like(context_ids)
         past_kv, logits_batch = recompute_logits_from_injected_cache(model, context_ids, context_mask, past_kv)
@@ -238,7 +239,7 @@ def generate_answer_trajectory_batch(model, tokenizer, input_ids, attention_mask
         blend = float(model.config.get("trajectory_state_blend", getattr(model, "trajectory_state_blend", 1.0)))
     else:
         layer_states = None
-        blend = 1.0
+        blend = float(model.config.get("trajectory_state_blend", getattr(model, "trajectory_state_blend", 1.0)))
 
     for h in range(z_traj.shape[1]):
         if bool(finished.all()) or all(len(ids) >= args.max_new_tokens for ids in new_ids):
@@ -248,7 +249,7 @@ def generate_answer_trajectory_batch(model, tokenizer, input_ids, attention_mask
             past_kv = model.blend_into_cache(past_kv, states_h, blend)
         else:
             states_h = model.predict_states(z_traj[:, h])
-            past_kv = model.inject_into_cache(past_kv, states_h)
+            past_kv = apply_generated_state(model, past_kv, states_h, blend)
         contexts = [all_ids[row] for row in range(batch_size)]
         context_ids, context_mask = build_padded_contexts(contexts, filler_id, input_ids.device)
         past_kv, logits = recompute_logits_from_injected_cache(model, context_ids, context_mask, past_kv)
