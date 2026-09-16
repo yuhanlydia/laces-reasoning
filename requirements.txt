@@ -11,3 +11,4 @@ tokenizers==0.22.2
 sentencepiece==0.2.1
 safetensors==0.5.3
 nltk==3.9.1
+rouge==1.0.1

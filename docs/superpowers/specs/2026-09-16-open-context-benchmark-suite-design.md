@@ -41,8 +41,9 @@ Use BABILong QA1, QA2, QA3, QA6, and QA9 at the official 0k, 1k, 2k, and
 yes/no reasoning, and negation without requiring a choice label. Score normalized exact
 match and answer containment, preserving the official answer strings.
 
-Use RULER variable tracking (`vt`) and open-ended QA (`qa_1`, `qa_2`) at 512, 1024,
-2048, and 4096 RWKV-token budgets. RULER data must be generated from the official code
+Use RULER variable tracking (`vt`) and open-ended QA (`qa_1`, `qa_2`) at 1024,
+2048, and 4096 RWKV-token budgets. The official generator cannot fit its task templates
+at 512 tokens and loops while retrying an impossible sample, so 512 is excluded. RULER data must be generated from the official code
 with the frozen RWKV tokenizer and seed 42.
 
 Sources: <https://github.com/booydar/babilong> and
@@ -102,7 +103,8 @@ S2 sampler, step count, CFG scale, seed, and maximum generation length must be r
 
 ## Context and capability gates
 
-Report results separately at 512, 1024, 2048, and 4096 input tokens. Never average length
+Report results separately at 512, 1024, 2048, and 4096 input tokens where the official
+task generator supports them; RULER starts at 1024. Never average length
 bins without also publishing each bin.
 
 Before comparing adapters, run a raw-backbone gold-context gate. A dataset/bin that the raw
@@ -123,7 +125,8 @@ a useful communication substrate.
 ## Metrics and statistics
 
 Use the official LongBench F1, retrieval accuracy, and ROUGE-L implementations. BABILong
-and RULER use normalized exact match plus answer containment where applicable. Save every
+uses its official task-label-aware `compare_answers`; RULER uses its official
+case-insensitive substring `any`/`all` metric. Save every
 raw prediction and token ID sequence.
 
 Report sample count, mean score, per-sample dynamic-minus-raw difference, paired wins/losses,

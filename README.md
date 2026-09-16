@@ -116,6 +116,14 @@ See the approved [open-context benchmark suite design](docs/superpowers/specs/20
 for datasets, pinned revisions, gates, concurrency rules, required artifacts, and success
 criteria. This is a forward plan, not a benchmark-improvement claim.
 
+The first matched GPU probe is now recorded at
+[`experiments/2026-09-16/open_context_smoke/`](experiments/2026-09-16/open_context_smoke/README.md).
+On the first 20 LongBench HotpotQA rows, dynamic scored 5.34 F1 versus 2.91 for raw
+(+2.43; paired wins/ties/losses 6/13/1). Five-row probes tied on BABILong QA1/1k,
+tied at zero on 2WikiMultihopQA, and favored raw on MultiFieldQA-en and GovReport.
+These small, prefix-ordered probes identify HotpotQA as the current promotion candidate;
+they are not full benchmark or state-of-the-art claims.
+
 ## Historical experiments are retained
 
 - [E1-E5 notes and capacity audit](experiments/2026-08-27/): fixed-basis alignment diagnostics
